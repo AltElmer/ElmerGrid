@@ -1,6 +1,9 @@
 /* femtypes.h */
 /* Defines the types used in the FEM model. */
 
+#ifndef _FEMTYPES_H_
+#define _FEMTYPES_H_
+
 /* Definiotins used in allocating space for the structures. */
 #define DIM 2               /* dimension of the space */
 #define MAXDOFS 20          /* maximum number of variables, e.g. T,P */ 
@@ -27,6 +30,11 @@
 #define CONDISCONT 1
 #define CONPERIODIC 2
 #define CONCONSTRAINT 3
+
+
+#define Real double
+
+
 
 struct CRSType {
   int *rows, *cols;
@@ -405,3 +413,4 @@ struct ElmergridType {
     infofile[MAXFILESIZE];
 };
 
+#endif

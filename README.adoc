@@ -19,7 +19,7 @@ of quadrilaterals or triangles. Also limited 3D functionality is provided in ter
 
 === Compiling:
 
-==== MSYS2:
+==== MSYS2-MinGW64:
 
 * `pacman -S mingw64/mingw-w64-x86_64-metis`
 * `pacman -S msys/cmake`
@@ -27,6 +27,13 @@ of quadrilaterals or triangles. Also limited 3D functionality is provided in ter
 * `cmake ..  -G "Unix Makefiles" -D CMAKE_MAKE_PROGRAM:path=mingw32-make`
 * `make`
 * the executable should be in `build/src/ElmerGrid.exe`
+
+==== MSVC-Vcpkg:
+* install vcpkg from https://github.com/microsoft/vcpkg[here]
+* `.\vcpkg install metis`
+* `cd path\to\dowloded\ElmerGrid\build`
+* `cmake ..`
+* `cmake --build .`
 
 === Licencing:
 

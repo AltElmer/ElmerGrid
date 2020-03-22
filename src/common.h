@@ -7,7 +7,7 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
-typedef double Real;
+// typedef double Real;
 #define Rvector       dvector
 #define Ivector       ivector
 #define Rmatrix       dmatrix
@@ -18,6 +18,15 @@ typedef double Real;
 #define free_Imatrix  free_imatrix
 #define TRUE 1
 #define FALSE 0
+
+#include <stddef.h>
+#include "femtypes.h"
+
+#ifdef _WIN32
+// #define _CRT_SECURE_NO_DEPRECATE
+#pragma warning (disable : 4996)
+#define _USE_MATH_DEFINES
+#endif
 
 void timer_init();
 void timer_activate(const char *prefix);
@@ -61,4 +70,44 @@ int next_int(char **start);
 int next_int_n(char **start, int n);
 Real next_real(char **start);
 void SortIndex( int N, double *Key, int *Ord );
+int safeD2I(double inputVar);
+
+// from here https://code.it4i.cz/mec059/elmer/blob/fa98b8bca81d8f74eed2998031ebc2c4c9db9829/elmerparam/src/global.h
+// #ifndef DISABLE_MATC
+//     char *mtc_domath(const char *);
+//     void mtc_init(FILE * input, FILE * output, FILE * error);
+
+// #   define MTC_DOMATH(cmd) mtc_domath(cmd)
+// #   define MTC_INIT(p) {\
+//         char command[MAXLINESIZE];\
+//         int i;\
+//         mtc_init(NULL, stdout, stderr);\
+//         strcpy(command, "format( 12, \"rowform\")");\
+//         mtc_domath(command);\
+//         for (i = 0; i < da_n(p->fun); i++) {\
+//             sprintf(command, "O(%d) = %e", i, dr_get(p->fun,i));\
+//             mtc_domath(command);\
+//         }\
+//         for (i = 0; i < da_n(p->xr); i++) {\
+//             sprintf(command, "R(%d) = %e", i, dr_get(p->xr,i));\
+//             mtc_domath(command);\
+//         }\
+//         for (i = 0; i < da_n(p->xi); i++) {\
+//             sprintf(command, "I(%d) = %d", i, di_get(p->xi,i));\
+//             mtc_domath(command);\
+//         }\
+//         printf("MATC library was activated!\n");\
+//         p->usematc = TRUE;\
+//     }
+// #else
+// static void *nop() { return NULL; }
+// #   define MTC_DOMATH(cmd) nop()
+// #   define MTC_INIT(p) {\
+//         fprintf(stderr, "WARNING: This version of ElmerParam was compiled "\
+//                         "without MATC library!\n");\
+//         p->usematc = FALSE;\
+//     }
+// #endif
+
+
 #endif
