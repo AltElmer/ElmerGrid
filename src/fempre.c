@@ -26,7 +26,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "femtypes.h"
 #include "common.h"
 #include "femdef.h"
 #include "femelmer.h"
@@ -35,9 +34,11 @@
 #include "feminfo.h"
 #include "femknot.h"
 #include "femmesh.h"
+#include "femtypes.h"
 #include "nrutil.h"
 
-static void Instructions() {
+static void Instructions(void)
+{
   printf("****************** Elmergrid ************************\n");
   printf("This program can create simple 2D structured meshes consisting of\n");
   printf(
@@ -248,13 +249,15 @@ static void Instructions() {
         "-names               : conserve name information where applicable\n");
 }
 
-static void Goodbye() {
+static void Goodbye(void)
+{
   printf("\nThank you for using Elmergrid!\n");
   printf("Send bug reports and feature wishes to elmeradm@csc.fi\n");
   exit(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   int i, j, k, l, inmethod, outmethod, info, errorstat;
   int nogrids, nomeshes, nofile, dim, elementsredone = 0;
   int nodes3d, elements3d, showmem;
@@ -277,31 +280,42 @@ int main(int argc, char *argv[]) {
   InitGrid(grids);
   info = TRUE;
 
-  if (argc <= 1) {
+  if (argc <= 1)
+  {
     errorstat = LoadCommands(argv[1], &eg, grids, argc - 1, info);
-    if (errorstat) {
+    if (errorstat)
+    {
       Instructions();
       Goodbye();
     }
-  } else if (argc == 2) {
+  }
+  else if (argc == 2)
+  {
     errorstat = LoadCommands(argv[1], &eg, grids, argc - 1, info);
     if (errorstat)
       Goodbye();
-  } else if (argc < 4) {
+  }
+  else if (argc < 4)
+  {
     Instructions();
     Goodbye();
-  } else {
+  }
+  else
+  {
     errorstat = InlineParameters(&eg, argc, argv);
     if (errorstat)
       Goodbye();
   }
 
-  if (!eg.outmethod || !eg.inmethod) {
+  if (!eg.outmethod || !eg.inmethod)
+  {
     printf("Please define the input and output formats\n");
   }
-  if (eg.inmethod != 1) {
+  if (eg.inmethod != 1)
+  {
     if (eg.outmethod == 1 || eg.outmethod == 8 || eg.outmethod == 9 ||
-        eg.outmethod == 10) {
+        eg.outmethod == 10)
+    {
       printf("input of type %d can't create output of type %d\n", eg.inmethod,
              eg.outmethod);
       errorstat++;
@@ -333,11 +347,13 @@ read_another_file:
 
   timer_show();
 
-  switch (inmethod) {
+  switch (inmethod)
+  {
 
   case 1:
     if (LoadElmergrid(&grids, &nogrids, eg.filesin[nofile], eg.relh, info) ==
-        1) {
+        1)
+    {
       if (dim == 3)
         ExampleGrid3D(&grids, &nogrids, info);
       if (dim == 2)
@@ -355,7 +371,8 @@ read_another_file:
   case 2:
     boundaries[nofile] = (struct BoundaryType *)malloc(
         (size_t)(MAXBOUNDARIES) * sizeof(struct BoundaryType));
-    for (i = 0; i < MAXBOUNDARIES; i++) {
+    for (i = 0; i < MAXBOUNDARIES; i++)
+    {
       boundaries[nofile][i].created = FALSE;
       boundaries[nofile][i].nosides = 0;
     }
@@ -382,7 +399,8 @@ read_another_file:
   case 5:
     boundaries[nofile] = (struct BoundaryType *)malloc(
         (size_t)(MAXBOUNDARIES) * sizeof(struct BoundaryType));
-    for (i = 0; i < MAXBOUNDARIES; i++) {
+    for (i = 0; i < MAXBOUNDARIES; i++)
+    {
       boundaries[nofile][i].created = FALSE;
       boundaries[nofile][i].nosides = 0;
     }
@@ -403,7 +421,8 @@ read_another_file:
       Goodbye();
     boundaries[nofile] = (struct BoundaryType *)malloc(
         (size_t)(MAXBOUNDARIES) * sizeof(struct BoundaryType));
-    for (i = 0; i < MAXBOUNDARIES; i++) {
+    for (i = 0; i < MAXBOUNDARIES; i++)
+    {
       boundaries[nofile][i].created = FALSE;
       boundaries[nofile][i].nosides = 0;
     }
@@ -419,11 +438,12 @@ read_another_file:
   case 8:
     boundaries[nofile] = (struct BoundaryType *)malloc(
         (size_t)(MAXBOUNDARIES) * sizeof(struct BoundaryType));
-    for (i = 0; i < MAXBOUNDARIES; i++) {
+    for (i = 0; i < MAXBOUNDARIES; i++)
+    {
       boundaries[nofile][i].created = FALSE;
       boundaries[nofile][i].nosides = 0;
     }
-    if (LoadUniversalMesh(&(data[nofile]), boundaries[nofile],
+    if (LoadUniversalMesh(&(data[nofile]), // boundaries[nofile],
                           eg.filesin[nofile], TRUE))
       Goodbye();
     nomeshes++;
@@ -432,7 +452,8 @@ read_another_file:
   case 9:
     boundaries[nofile] = (struct BoundaryType *)malloc(
         (size_t)(MAXBOUNDARIES) * sizeof(struct BoundaryType));
-    for (i = 0; i < MAXBOUNDARIES; i++) {
+    for (i = 0; i < MAXBOUNDARIES; i++)
+    {
       boundaries[nofile][i].created = FALSE;
       boundaries[nofile][i].nosides = 0;
     }
@@ -449,7 +470,8 @@ read_another_file:
       Goodbye();
     boundaries[nofile] = (struct BoundaryType *)malloc(
         (size_t)(MAXBOUNDARIES) * sizeof(struct BoundaryType));
-    for (i = 0; i < MAXBOUNDARIES; i++) {
+    for (i = 0; i < MAXBOUNDARIES; i++)
+    {
       boundaries[nofile][i].created = FALSE;
       boundaries[nofile][i].nosides = 0;
     }
@@ -461,7 +483,8 @@ read_another_file:
   case 11:
     boundaries[nofile] = (struct BoundaryType *)malloc(
         (size_t)(MAXBOUNDARIES) * sizeof(struct BoundaryType));
-    for (i = 0; i < MAXBOUNDARIES; i++) {
+    for (i = 0; i < MAXBOUNDARIES; i++)
+    {
       boundaries[nofile][i].created = FALSE;
       boundaries[nofile][i].nosides = 0;
     }
@@ -474,12 +497,13 @@ read_another_file:
   case 12:
     boundaries[nofile] = (struct BoundaryType *)malloc(
         (size_t)(MAXBOUNDARIES) * sizeof(struct BoundaryType));
-    for (i = 0; i < MAXBOUNDARIES; i++) {
+    for (i = 0; i < MAXBOUNDARIES; i++)
+    {
       boundaries[nofile][i].created = FALSE;
       boundaries[nofile][i].nosides = 0;
     }
-    if (LoadMeditInput(&(data[nofile]), boundaries[nofile], eg.filesin[nofile],
-                       TRUE))
+    if (LoadMeditInput(&(data[nofile]), // boundaries[nofile],
+                       eg.filesin[nofile], TRUE))
       Goodbye();
     nomeshes++;
     break;
@@ -487,7 +511,8 @@ read_another_file:
   case 13:
     boundaries[nofile] = (struct BoundaryType *)malloc(
         (size_t)(MAXBOUNDARIES) * sizeof(struct BoundaryType));
-    for (i = 0; i < MAXBOUNDARIES; i++) {
+    for (i = 0; i < MAXBOUNDARIES; i++)
+    {
       boundaries[nofile][i].created = FALSE;
       boundaries[nofile][i].nosides = 0;
     }
@@ -502,7 +527,8 @@ read_another_file:
         (size_t)(MAXBOUNDARIES) * sizeof(struct BoundaryType));
     data[nofile].dim =
         (eg.dim >= 1 && eg.dim <= 3) ? eg.dim : 3; /* default dim 3 with gmsh*/
-    for (i = 0; i < MAXBOUNDARIES; i++) {
+    for (i = 0; i < MAXBOUNDARIES; i++)
+    {
       boundaries[nofile][i].created = FALSE;
       boundaries[nofile][i].nosides = 0;
     }
@@ -527,7 +553,8 @@ read_another_file:
   case 16:
     boundaries[nofile] = (struct BoundaryType *)malloc(
         (size_t)(MAXBOUNDARIES) * sizeof(struct BoundaryType));
-    for (i = 0; i < MAXBOUNDARIES; i++) {
+    for (i = 0; i < MAXBOUNDARIES; i++)
+    {
       boundaries[nofile][i].created = FALSE;
       boundaries[nofile][i].nosides = 0;
     }
@@ -564,11 +591,12 @@ read_another_file:
   case 17:
     boundaries[nofile] = (struct BoundaryType *)malloc(
         (size_t)(MAXBOUNDARIES) * sizeof(struct BoundaryType));
-    for (i = 0; i < MAXBOUNDARIES; i++) {
+    for (i = 0; i < MAXBOUNDARIES; i++)
+    {
       boundaries[nofile][i].created = FALSE;
       boundaries[nofile][i].nosides = 0;
     }
-    if (LoadNastranInput(&(data[nofile]), boundaries[nofile],
+    if (LoadNastranInput(&(data[nofile]), // boundaries[nofile],
                          eg.filesin[nofile], TRUE))
       Goodbye();
     nomeshes++;
@@ -577,7 +605,8 @@ read_another_file:
   case 18:
     boundaries[nofile] = (struct BoundaryType *)malloc(
         (size_t)(MAXBOUNDARIES) * sizeof(struct BoundaryType));
-    for (i = 0; i < MAXBOUNDARIES; i++) {
+    for (i = 0; i < MAXBOUNDARIES; i++)
+    {
       boundaries[nofile][i].created = FALSE;
       boundaries[nofile][i].nosides = 0;
     }
@@ -590,7 +619,8 @@ read_another_file:
   case 19:
     boundaries[nofile] = (struct BoundaryType *)malloc(
         (size_t)(MAXBOUNDARIES) * sizeof(struct BoundaryType));
-    for (i = 0; i < MAXBOUNDARIES; i++) {
+    for (i = 0; i < MAXBOUNDARIES; i++)
+    {
       boundaries[nofile][i].created = FALSE;
       boundaries[nofile][i].nosides = 0;
     }
@@ -603,7 +633,8 @@ read_another_file:
   case 20:
     boundaries[nofile] = (struct BoundaryType *)malloc(
         (size_t)(MAXBOUNDARIES) * sizeof(struct BoundaryType));
-    for (i = 0; i < MAXBOUNDARIES; i++) {
+    for (i = 0; i < MAXBOUNDARIES; i++)
+    {
       boundaries[nofile][i].created = FALSE;
       boundaries[nofile][i].nosides = 0;
     }
@@ -616,7 +647,8 @@ read_another_file:
   case 21:
     boundaries[nofile] = (struct BoundaryType *)malloc(
         (size_t)(MAXBOUNDARIES) * sizeof(struct BoundaryType));
-    for (i = 0; i < MAXBOUNDARIES; i++) {
+    for (i = 0; i < MAXBOUNDARIES; i++)
+    {
       boundaries[nofile][i].created = FALSE;
       boundaries[nofile][i].nosides = 0;
     }
@@ -632,7 +664,8 @@ read_another_file:
   }
 
   nofile++;
-  if (nofile < eg.nofilesin) {
+  if (nofile < eg.nofilesin)
+  {
     printf("\nElmergrid loading data from another file:\n");
     goto read_another_file;
   }
@@ -645,10 +678,12 @@ redoelements:
   printf("-------------------------------------------\n");
   timer_show();
 
-  if (nogrids > nomeshes && outmethod != 1) {
+  if (nogrids > nomeshes && outmethod != 1)
+  {
 
     nomeshes = nogrids;
-    for (k = 0; k < nogrids; k++) {
+    for (k = 0; k < nogrids; k++)
+    {
 
       CreateCells(&(grids[k]), &(cell[k]), info);
       CreateKnots(&(grids[k]), cell[k], &(data[k]), 0, 0);
@@ -656,18 +691,24 @@ redoelements:
       boundaries[k] = (struct BoundaryType *)malloc(
           (size_t)(MAXBOUNDARIES) * sizeof(struct BoundaryType));
 
-      for (j = 0; j < MAXBOUNDARIES; j++) {
+      for (j = 0; j < MAXBOUNDARIES; j++)
+      {
         boundaries[k][j].created = FALSE;
         boundaries[k][j].nosides = FALSE;
       }
 
-      if (grids[k].noboundaries > 0) {
-        for (j = 0; j < grids[k].noboundaries; j++) {
-          if (grids[k].boundsolid[j] < 4) {
+      if (grids[k].noboundaries > 0)
+      {
+        for (j = 0; j < grids[k].noboundaries; j++)
+        {
+          if (grids[k].boundsolid[j] < 4)
+          {
             CreateBoundary(cell[k], &(data[k]), &(boundaries[k][j]),
                            grids[k].boundext[j], grids[k].boundint[j], 1,
                            grids[k].boundtype[j]);
-          } else {
+          }
+          else
+          {
             CreatePoints(cell[k], &(data[k]), &(boundaries[k][j]),
                          grids[k].boundext[j], grids[k].boundint[j],
                          grids[k].boundsolid[j], grids[k].boundtype[j]);
@@ -679,21 +720,26 @@ redoelements:
 
   /* In some formats the dimension for curved 2D meshes seems to be set to 2.
      This should fix the problem for all input types. */
-  if (data->dim < 3) {
+  if (data->dim < 3)
+  {
     data->dim = GetCoordinateDimension(data, info);
   }
 
   /* Make the discontinuous boundary needed, for example, in poor thermal
    * conduction */
-  for (k = 0; k < nomeshes; k++) {
-    if (!eg.discont) {
+  for (k = 0; k < nomeshes; k++)
+  {
+    if (!eg.discont)
+    {
       for (j = 0; j < grids[k].noboundaries; j++)
-        if (grids[k].boundsolid[j] == 2) {
+        if (grids[k].boundsolid[j] == 2)
+        {
           eg.discontbounds[eg.discont] = grids[k].boundtype[j];
           eg.discont++;
         }
     }
-    if (eg.discont) {
+    if (eg.discont)
+    {
       for (i = 1; i <= eg.discont; i++)
         SetDiscontinuousBoundary(&(data[k]), boundaries[k],
                                  eg.discontbounds[i - 1], 2, info);
@@ -702,7 +748,8 @@ redoelements:
 
   /* Divide quadrilateral meshes into triangular meshes */
   for (k = 0; k < nomeshes; k++)
-    if (nogrids && (eg.triangles || grids[k].triangles == TRUE)) {
+    if (nogrids && (eg.triangles || grids[k].triangles == TRUE))
+    {
       Real criticalangle;
       criticalangle = MAX(eg.triangleangle, grids[k].triangleangle);
       ElementsToTriangles(&data[k], boundaries[k], criticalangle, info);
@@ -717,24 +764,27 @@ redoelements:
 
   else if (eg.layers < 0)
     for (k = 0; k < nomeshes; k++)
-      CreateBoundaryLayerDivide(&data[k], boundaries[k], abs(eg.layers),
-                                eg.layerbounds, eg.layernumber, eg.layerratios,
-                                eg.layerthickness, eg.layerparents, info);
+      // CreateBoundaryLayerDivide(&data[k], boundaries[k], abs(eg.layers), eg.layerbounds, eg.layernumber, eg.layerratios, eg.layerthickness, eg.layerparents, info);
+      CreateBoundaryLayerDivide(&data[k], boundaries[k], abs(eg.layers), eg.layerbounds, eg.layernumber, eg.layerratios, eg.layerthickness, info);
 
   /* Take up the infor on rotation */
   for (k = 0; k < nogrids; k++)
-    if (grids[k].rotatecurve) {
+    if (grids[k].rotatecurve)
+    {
       eg.rotatecurve = TRUE;
       eg.curvezet = grids[k].curvezet;
       eg.curverad = grids[k].curverad;
       eg.curveangle = grids[k].curveangle;
     }
 
-  if (outmethod != 1 && dim != 2 && eg.dim != 2) {
+  if (outmethod != 1 && dim != 2 && eg.dim != 2)
+  {
     j = MAX(nogrids, 1);
 
-    for (k = 0; k < j; k++) {
-      if (grids[k].dimension == 3 || grids[k].rotate) {
+    for (k = 0; k < j; k++)
+    {
+      if (grids[k].dimension == 3 || grids[k].rotate)
+      {
 
         boundaries[j] = (struct BoundaryType *)malloc(
             (size_t)(MAXBOUNDARIES) * sizeof(struct BoundaryType));
@@ -745,33 +795,43 @@ redoelements:
         CreateKnotsExtruded(&(data[k]), boundaries[k], &(grids[k]), &(data[j]),
                             boundaries[j], info);
 
-        if (nogrids) {
+        if (nogrids)
+        {
           elements3d = MAX(eg.elements3d, grids[k].wantedelems3d);
           nodes3d = MAX(eg.nodes3d, grids[k].wantednodes3d);
 
-          if (elements3d) {
+          if (elements3d)
+          {
             if (abs(data[j].noelements - elements3d) / (1.0 * elements3d) >
                     0.01 &&
-                elementsredone < 5) {
+                elementsredone < 5)
+            {
               grids[k].wantedelems *= safeD2I(
                   pow(1.0 * elements3d / data[j].noelements, (2.0 / 3.0)));
               elementsredone++;
-            } else
+            }
+            else
               elementsredone = 0;
-          } else if (nodes3d) {
+          }
+          else if (nodes3d)
+          {
             if (abs(data[j].noknots - nodes3d) / (1.0 * nodes3d) > 0.01 &&
-                elementsredone < 5) {
+                elementsredone < 5)
+            {
               grids[k].wantedelems *=
                   safeD2I(pow(1.0 * nodes3d / data[j].noknots, (2.0 / 3.0)));
               elementsredone++;
-            } else
+            }
+            else
               elementsredone = 0;
           }
 
-          if (elementsredone) {
+          if (elementsredone)
+          {
             nomeshes = 0;
             for (i = 0; i < nogrids; i++)
-              SetElementDivision(&(grids[i]), eg.relh, info);
+              // SetElementDivision(&(grids[i]), eg.relh, info);
+              SetElementDivision(&(grids[i]), eg.relh);
 
             DestroyKnots(&data[j]);
             DestroyKnots(&data[k]);
@@ -792,8 +852,10 @@ redoelements:
 
   /* If the original mesh was given in polar coordinates make the transformation
    * into cartesian ones */
-  for (k = 0; k < nomeshes; k++) {
-    if (eg.polar || data[k].coordsystem == COORD_POLAR) {
+  for (k = 0; k < nomeshes; k++)
+  {
+    if (eg.polar || data[k].coordsystem == COORD_POLAR)
+    {
       if (!eg.polar)
         eg.polarradius = grids[k].polarradius;
       PolarCoordinates(&data[k], eg.polarradius, info);
@@ -802,8 +864,10 @@ redoelements:
 
   /* If the original mesh was given in cylindrical coordinates make the
    * transformation into cartesian ones */
-  for (k = 0; k < nomeshes; k++) {
-    if (eg.cylinder || data[k].coordsystem == COORD_CYL) {
+  for (k = 0; k < nomeshes; k++)
+  {
+    if (eg.cylinder || data[k].coordsystem == COORD_CYL)
+    {
       CylinderCoordinates(&data[k], info);
     }
   }
@@ -819,22 +883,27 @@ redoelements:
                                  eg.curveangle);
 
   /* Unite meshes if there are several of them */
-  if (eg.unitemeshes) {
+  if (eg.unitemeshes)
+  {
     for (k = 1; k < nomeshes; k++)
       UniteMeshes(&data[0], &data[k], boundaries[0], boundaries[k],
                   eg.unitenooverlap, info);
     nomeshes = nogrids = 1;
   }
 
-  if (eg.clone[0] || eg.clone[1] || eg.clone[2]) {
-    for (k = 0; k < nomeshes; k++) {
+  if (eg.clone[0] || eg.clone[1] || eg.clone[2])
+  {
+    for (k = 0; k < nomeshes; k++)
+    {
       CloneMeshes(&data[k], boundaries[k], eg.clone, eg.clonesize, eg.cloneinds,
                   info);
     }
   }
 
-  if (eg.mirror[0] || eg.mirror[1] || eg.mirror[2]) {
-    for (k = 0; k < nomeshes; k++) {
+  if (eg.mirror[0] || eg.mirror[1] || eg.mirror[2])
+  {
+    for (k = 0; k < nomeshes; k++)
+    {
       MirrorMeshes(&data[k], boundaries[k], eg.mirror, FALSE, eg.clonesize,
                    eg.mirrorbc, info);
       mergeeps =
@@ -845,14 +914,17 @@ redoelements:
   }
 
   /* Naming convection for the case of several meshes */
-  if (nomeshes > 1) {
+  if (nomeshes > 1)
+  {
     strcpy(prefix, eg.filesout[0]);
     for (k = 0; k < nomeshes; k++)
       sprintf(eg.filesout[k], "%s%d", prefix, k + 1);
   }
 
-  for (k = 0; k < nomeshes; k++) {
-    if (nogrids && grids[k].reduceordermatmax) {
+  for (k = 0; k < nomeshes; k++)
+  {
+    if (nogrids && grids[k].reduceordermatmax)
+    {
       eg.reduce = TRUE;
       eg.reducemat1 = grids[k].reduceordermatmin;
       eg.reducemat2 = grids[k].reduceordermatmax;
@@ -865,7 +937,8 @@ redoelements:
     if (eg.increase)
       IncreaseElementOrder(&data[k], TRUE);
 
-  for (k = 0; k < nomeshes; k++) {
+  for (k = 0; k < nomeshes; k++)
+  {
     if (eg.merge)
       MergeElements(&data[k], boundaries[k], eg.order, eg.corder, eg.cmerge,
                     FALSE, TRUE);
@@ -879,16 +952,21 @@ redoelements:
       ReorderElements(&data[k], boundaries[k], eg.order, eg.corder, TRUE);
 
     if (eg.isoparam)
-      IsoparametricElements(&data[k], boundaries[k], TRUE, info);
+      // IsoparametricElements(&data[k], boundaries[k], TRUE, info);
+      IsoparametricElements(&data[k], boundaries[k], info);
   }
 
-  for (k = 0; k < nomeshes; k++) {
-    if (eg.bulkbounds || eg.boundbounds) {
+  for (k = 0; k < nomeshes; k++)
+  {
+    if (eg.bulkbounds || eg.boundbounds)
+    {
       int *boundnodes, noboundnodes;
       boundnodes = Ivector(1, data[k].noknots);
 
-      if (eg.bulkbounds) {
-        for (l = 0; l < eg.bulkbounds; l++) {
+      if (eg.bulkbounds)
+      {
+        for (l = 0; l < eg.bulkbounds; l++)
+        {
           FindBulkBoundary(&data[k], eg.bulkbound[3 * l],
                            eg.bulkbound[3 * l + 1], boundnodes, &noboundnodes,
                            info);
@@ -896,8 +974,10 @@ redoelements:
                             eg.bulkbound[3 * l + 2], 1, info);
         }
       }
-      if (eg.boundbounds) {
-        for (l = 0; l < eg.boundbounds; l++) {
+      if (eg.boundbounds)
+      {
+        for (l = 0; l < eg.boundbounds; l++)
+        {
           FindBoundaryBoundary(&data[k], boundaries[k], eg.boundbound[3 * l],
                                eg.boundbound[3 * l + 1], boundnodes,
                                &noboundnodes, info);
@@ -937,25 +1017,33 @@ redoelements:
 
   if (eg.bulkorder)
     for (k = 0; k < nomeshes; k++)
-      RenumberMaterialTypes(&data[k], boundaries[k], info);
+      // RenumberMaterialTypes(&data[k], boundaries[k], info);
+      RenumberMaterialTypes(&data[k], info);
 
-  if (eg.sidemappings) {
+  if (eg.sidemappings)
+  {
     int currenttype;
 
     for (l = 0; l < eg.sidemappings; l++)
       printf("Setting boundary types between %d and %d to %d\n",
              eg.sidemap[3 * l], eg.sidemap[3 * l + 1], eg.sidemap[3 * l + 2]);
 
-    for (k = 0; k < nomeshes; k++) {
-      for (j = 0; j < MAXBOUNDARIES; j++) {
+    for (k = 0; k < nomeshes; k++)
+    {
+      for (j = 0; j < MAXBOUNDARIES; j++)
+      {
         if (!boundaries[k][j].created)
           continue;
 
-        for (i = 1; i <= boundaries[k][j].nosides; i++) {
-          if (currenttype = boundaries[k][j].types[i]) {
-            for (l = 0; l < eg.sidemappings; l++) {
+        for (i = 1; i <= boundaries[k][j].nosides; i++)
+        {
+          if (currenttype == boundaries[k][j].types[i])
+          {
+            for (l = 0; l < eg.sidemappings; l++)
+            {
               if (currenttype >= eg.sidemap[3 * l] &&
-                  currenttype <= eg.sidemap[3 * l + 1]) {
+                  currenttype <= eg.sidemap[3 * l + 1])
+              {
                 boundaries[k][j].types[i] = eg.sidemap[3 * l + 2];
                 currenttype = -1;
               }
@@ -968,17 +1056,22 @@ redoelements:
       printf("Renumbering boundary types finished\n");
   }
 
-  if (eg.bulkmappings) {
+  if (eg.bulkmappings)
+  {
     int currenttype;
     for (l = 0; l < eg.bulkmappings; l++)
       printf("Setting material types between %d and %d to %d\n",
              eg.bulkmap[3 * l], eg.bulkmap[3 * l + 1], eg.bulkmap[3 * l + 2]);
-    for (k = 0; k < nomeshes; k++) {
-      for (j = 1; j <= data[k].noelements; j++) {
+    for (k = 0; k < nomeshes; k++)
+    {
+      for (j = 1; j <= data[k].noelements; j++)
+      {
         currenttype = data[k].material[j];
-        for (l = 0; l < eg.bulkmappings; l++) {
+        for (l = 0; l < eg.bulkmappings; l++)
+        {
           if (currenttype >= eg.bulkmap[3 * l] &&
-              currenttype <= eg.bulkmap[3 * l + 1]) {
+              currenttype <= eg.bulkmap[3 * l + 1])
+          {
             data[k].material[j] = eg.bulkmap[3 * l + 2];
             currenttype = -1;
           }
@@ -989,9 +1082,11 @@ redoelements:
       printf("Renumbering material indexes finished\n");
   }
 
-  if (eg.coordinatemap[0] && eg.coordinatemap[1] && eg.coordinatemap[2]) {
+  if (eg.coordinatemap[0] && eg.coordinatemap[1] && eg.coordinatemap[2])
+  {
     Real *tmpcoord[3];
-    for (k = 0; k < nomeshes; k++) {
+    for (k = 0; k < nomeshes; k++)
+    {
       tmpcoord[0] = data[k].x;
       tmpcoord[1] = data[k].y;
       tmpcoord[2] = data[k].z;
@@ -1005,17 +1100,21 @@ redoelements:
     }
   }
 
-  for (k = 0; k < nomeshes; k++) {
+  for (k = 0; k < nomeshes; k++)
+  {
     int partoptim, partbcoptim, partopt, fail, partdual;
 
-    if (eg.metis == 1) {
+    if (eg.metis == 1)
+    {
       if (info)
         printf("One Metis partition requested, enforcing serial mode\n");
       eg.metis = 0;
     }
 
-    if (eg.partitions == 1) {
-      if (!eg.connect) {
+    if (eg.partitions == 1)
+    {
+      if (!eg.connect)
+      {
         if (info)
           printf("One geometric partition requested, enforcing serial mode\n");
         eg.partitions = 0;
@@ -1026,7 +1125,8 @@ redoelements:
     partbcoptim = eg.partbcoptim;
     partdual = eg.partdual;
 
-    if (eg.partitions || eg.metis) {
+    if (eg.partitions || eg.metis)
+    {
       printf("\nElmergrid partitioning meshes:\n");
       printf("------------------------------\n");
       timer_show();
@@ -1042,7 +1142,8 @@ redoelements:
       if (eg.periodicdim[0] || eg.periodicdim[1] || eg.periodicdim[2])
         FindPeriodicNodes(&data[k], eg.periodicdim, info);
 
-      if (eg.partitions) {
+      if (eg.partitions)
+      {
         if (partopt == -1)
           partopt = partdual;
         if (partopt == 0)
@@ -1060,23 +1161,29 @@ redoelements:
                                eg.partorder, eg.partcorder, info);
       }
 #if PARTMETIS
-      if (eg.metis) {
-        if (partopt < 0 || partopt > 4) {
+      if (eg.metis)
+      {
+        if (partopt < 0 || partopt > 4)
+        {
           printf("Metis optional parameter should be in range [0,4], not %d\n",
                  partopt);
           bigerror("Cannot perform partitioning");
         }
-        if (partopt <= 1 && eg.connect) {
+        if (partopt <= 1 && eg.connect)
+        {
           printf("Elemental Metis partition cannot deal with constraints!\n");
           printf("Using Metis algorithms based on the dual graph\n");
           partopt = 2;
         }
 
-        if (partopt <= 1) {
+        if (partopt <= 1)
+        {
           if (!partdual)
             partdual = partopt;
           fail = PartitionMetisMesh(&data[k], &eg, eg.metis, partdual, info);
-        } else {
+        }
+        else
+        {
           PartitionMetisGraph(&data[k], boundaries[k], &eg, eg.metis, partopt,
                               partdual, info);
         }
@@ -1087,14 +1194,17 @@ redoelements:
 
       timer_show();
       /* This is the only routine that affects the ownership of elements */
-      if (partbcoptim) {
+      if (partbcoptim)
+      {
         OptimizePartitioningAtBoundary(&data[k], boundaries[k], info);
       }
 
-      OptimizePartitioning(&data[k], boundaries[k], !partoptim, eg.partbw,
-                           info);
+      // OptimizePartitioning(&data[k], boundaries[k], !partoptim, eg.partbw,
+      // info);
+      OptimizePartitioning(&data[k], !partoptim, eg.partbw, info);
 
-      if (data[k].periodicexist) {
+      if (data[k].periodicexist)
+      {
         free_Ivector(data[k].periodic, 1, data[k].noknots);
         data[k].periodicexist = FALSE;
       }
@@ -1102,12 +1212,14 @@ redoelements:
     timer_show();
   }
 
-  if (eg.timeron) {
+  if (eg.timeron)
+  {
     for (k = 0; k < nomeshes; k++)
       SaveSizeInfo(&data[k], boundaries[k], eg.infofile, info);
   }
 
-  if (eg.nosave) {
+  if (eg.nosave)
+  {
     Goodbye();
     return (0);
   }
@@ -1116,13 +1228,15 @@ redoelements:
   printf("\nElmergrid saving data with method %d:\n", outmethod);
   printf("-------------------------------------\n");
 
-  switch (outmethod) {
+  switch (outmethod)
+  {
   case 1:
     SaveElmergrid(grids, nogrids, eg.filesout[0], info);
     break;
 
   case 2:
-    for (k = 0; k < nomeshes; k++) {
+    for (k = 0; k < nomeshes; k++)
+    {
       if (data[k].nopartitions > 1)
         SaveElmerInputPartitioned(
             &data[k], boundaries[k], eg.filesout[k], eg.decimals, eg.parthalo,
@@ -1136,7 +1250,8 @@ redoelements:
 
   case 22:
 
-    for (k = 0; k < nomeshes; k++) {
+    for (k = 0; k < nomeshes; k++)
+    {
       SaveElmerInputFemBem(&data[k], boundaries[k], eg.filesout[k], eg.decimals,
                            info);
     }
@@ -1145,8 +1260,10 @@ redoelements:
   case 3:
     /* Create a variable so that when saving data in ElmerPost format there is
      * something to visualize */
-    for (k = 0; k < nomeshes; k++) {
-      if (data[k].variables == 0) {
+    for (k = 0; k < nomeshes; k++)
+    {
+      if (data[k].variables == 0)
+      {
         CreateVariable(&data[k], 1, 1, 0.0, "Number", FALSE);
         for (i = 1; i <= data[k].alldofs[1]; i++)
           data[k].dofs[1][i] = (Real)(i);
@@ -1158,7 +1275,8 @@ redoelements:
     break;
 
   case 4:
-    for (k = 0; k < nomeshes; k++) {
+    for (k = 0; k < nomeshes; k++)
+    {
       SaveMeshGmsh(&data[k], boundaries[k],
                    eg.saveboundaries ? MAXBOUNDARIES : 0, eg.filesout[k],
                    eg.decimals, info);
@@ -1166,7 +1284,8 @@ redoelements:
     break;
 
   case 5:
-    for (k = 0; k < nomeshes; k++) {
+    for (k = 0; k < nomeshes; k++)
+    {
       SaveMeshVtu(&data[k], boundaries[k],
                   eg.saveboundaries ? MAXBOUNDARIES : 0, eg.filesout[k],
                   eg.vtuone, info);
@@ -1192,9 +1311,11 @@ redoelements:
     /* Some obsolete special formats related to mapping, view factors etc. */
 
   case 101:
-    for (k = 0; k < nogrids; k++) {
+    for (k = 0; k < nogrids; k++)
+    {
       for (i = 0; i < grids[k].noboundaries; i++)
-        if (boundaries[k][i].created == TRUE) {
+        if (boundaries[k][i].created == TRUE)
+        {
           sprintf(prefix, "%s%d", eg.filesout[k], i + 1);
           SaveBoundary(&data[k], &boundaries[k][i], prefix, info);
         }

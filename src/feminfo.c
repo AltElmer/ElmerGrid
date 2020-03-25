@@ -115,7 +115,7 @@ newline:
     goto newline;
 
   for (i = 0; i < MAXLINESIZE; i++)
-    line1[i] = toupper(line0[i]);
+    line1[i] = (char)toupper(line0[i]);
 
   if (iodebug)
   {
@@ -196,7 +196,7 @@ newline:
       j = i;
       break;
     }
-    line1[i] = toupper(line0[i]);
+    line1[i] = (char)toupper(line0[i]);
   }
 
   /* After these commands there will be no nextline even though there is no
@@ -385,7 +385,7 @@ int InlineParameters(struct ElmergridType *eg, int argc, char *argv[])
   /* Type of input file */
   strcpy(command, argv[1]);
   for (i = 0; i < MAXLINESIZE; i++)
-    command[i] = toupper(command[i]);
+    command[i] = (char)toupper(command[i]);
   for (i = 0; i <= MAXINMETHODS; i++)
   {
     if (strstr(command, InMethods[i]))
@@ -400,7 +400,7 @@ int InlineParameters(struct ElmergridType *eg, int argc, char *argv[])
   /* Type of output file (fewer options) */
   strcpy(command, argv[2]);
   for (i = 0; i < MAXLINESIZE; i++)
-    command[i] = toupper(command[i]);
+    command[i] = (char)toupper(command[i]);
   for (i = 1; i <= MAXOUTMETHODS; i++)
   {
     if (strstr(command, OutMethods[i]))
@@ -1358,7 +1358,7 @@ int LoadCommands(char *prefix, struct ElmergridType *eg, struct GridType *grid,
       else if (strstr(command, "INPUT MODE"))
       {
         for (j = 0; j < MAXLINESIZE; j++)
-          params[j] = toupper(params[j]);
+          params[j] = (char)toupper(params[j]);
 
         for (i = 0; i <= MAXINMETHODS; i++)
         {
@@ -1375,7 +1375,7 @@ int LoadCommands(char *prefix, struct ElmergridType *eg, struct GridType *grid,
       else if (strstr(command, "OUTPUT MODE"))
       {
         for (j = 0; j < MAXLINESIZE; j++)
-          params[j] = toupper(params[j]);
+          params[j] = (char)toupper(params[j]);
 
         /* Type of output file (fewer options) */
         for (i = 1; i <= MAXOUTMETHODS; i++)
@@ -1407,7 +1407,7 @@ int LoadCommands(char *prefix, struct ElmergridType *eg, struct GridType *grid,
     else if (strstr(command, "TRIANGLES"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->triangles = TRUE;
     }
@@ -1419,14 +1419,14 @@ int LoadCommands(char *prefix, struct ElmergridType *eg, struct GridType *grid,
     else if (strstr(command, "UNITE"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->unitemeshes = TRUE;
     }
     else if (strstr(command, "UNITENOOVERLAP"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
       {
         eg->unitemeshes = TRUE;
@@ -1522,7 +1522,7 @@ int LoadCommands(char *prefix, struct ElmergridType *eg, struct GridType *grid,
     else if (strstr(command, "CYLINDER"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->cylinder = TRUE;
     }
@@ -1534,7 +1534,7 @@ int LoadCommands(char *prefix, struct ElmergridType *eg, struct GridType *grid,
     else if (strstr(command, "INCREASE DEGREE"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->increase = TRUE;
     }
@@ -1575,7 +1575,7 @@ int LoadCommands(char *prefix, struct ElmergridType *eg, struct GridType *grid,
     else if (strstr(command, "PARTITION DUAL"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->partdual = TRUE;
     }
@@ -1623,49 +1623,49 @@ int LoadCommands(char *prefix, struct ElmergridType *eg, struct GridType *grid,
     else if (strstr(command, "HALO"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->parthalo[1] = TRUE;
     }
     else if (strstr(command, "BOUNDARY HALO"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->parthalo[2] = TRUE;
     }
     else if (strstr(command, "EXTRUDED HALO"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->parthalo[3] = TRUE;
     }
     else if (strstr(command, "GREEDY HALO"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->parthalo[4] = TRUE;
     }
     else if (strstr(command, "PARTBW"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->partbw = TRUE;
     }
     else if (strstr(command, "PARTHYPRE"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->parthypre = TRUE;
     }
     else if (strstr(command, "INDIRECT"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->partitionindirect = TRUE;
     }
@@ -1676,7 +1676,7 @@ int LoadCommands(char *prefix, struct ElmergridType *eg, struct GridType *grid,
         if (i > 0)
           Getline(params, in);
         for (j = 0; j < MAXLINESIZE; j++)
-          params[j] = toupper(params[j]);
+          params[j] = (char)toupper(params[j]);
         if (strstr(params, "END"))
           break;
         cp = params;
@@ -1693,7 +1693,7 @@ int LoadCommands(char *prefix, struct ElmergridType *eg, struct GridType *grid,
         if (i > 0)
           Getline(params, in);
         for (j = 0; j < MAXLINESIZE; j++)
-          params[j] = toupper(params[j]);
+          params[j] = (char)toupper(params[j]);
         if (strstr(params, "END"))
           break;
         cp = params;
@@ -1715,7 +1715,7 @@ int LoadCommands(char *prefix, struct ElmergridType *eg, struct GridType *grid,
         if (i > 0)
           Getline(params, in);
         for (j = 0; j < MAXLINESIZE; j++)
-          params[j] = toupper(params[j]);
+          params[j] = (char)toupper(params[j]);
         if (strstr(params, "END"))
           break;
         cp = params;
@@ -1732,7 +1732,7 @@ int LoadCommands(char *prefix, struct ElmergridType *eg, struct GridType *grid,
         if (i > 0)
           Getline(params, in);
         for (j = 0; j < MAXLINESIZE; j++)
-          params[j] = toupper(params[j]);
+          params[j] = (char)toupper(params[j]);
         if (strstr(params, "END"))
           break;
         cp = params;
@@ -1748,7 +1748,7 @@ int LoadCommands(char *prefix, struct ElmergridType *eg, struct GridType *grid,
       for (i = 0; i < MAXBOUNDARIES; i++)
       {
         for (j = 0; j < MAXLINESIZE; j++)
-          params[j] = toupper(params[j]);
+          params[j] = (char)toupper(params[j]);
         if (strstr(params, "END"))
           break;
         cp = params;
@@ -1763,7 +1763,7 @@ int LoadCommands(char *prefix, struct ElmergridType *eg, struct GridType *grid,
       for (i = 0; i < MAXBOUNDARIES; i++)
       {
         for (j = 0; j < MAXLINESIZE; j++)
-          params[j] = toupper(params[j]);
+          params[j] = (char)toupper(params[j]);
         if (strstr(params, "END"))
           break;
         cp = params;
@@ -1791,7 +1791,7 @@ int LoadCommands(char *prefix, struct ElmergridType *eg, struct GridType *grid,
           if (i > 0)
             Getline(params, in);
           for (j = 0; j < MAXLINESIZE; j++)
-            params[j] = toupper(params[j]);
+            params[j] = (char)toupper(params[j]);
           cp = params;
 
           if (strstr(params, "END") || strstr(params, "End"))
@@ -1809,42 +1809,42 @@ int LoadCommands(char *prefix, struct ElmergridType *eg, struct GridType *grid,
     else if (strstr(command, "REMOVE LOWER DIMENSIONAL BOUNDARIES"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->removelowdim = TRUE;
     }
     else if (strstr(command, "REMOVE INTERNAL BOUNDARIES"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->removeintbcs = TRUE;
     }
     else if (strstr(command, "REMOVE UNUSED NODES"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->removeunused = TRUE;
     }
     else if (strstr(command, "NO MESH NAMES"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->usenames = FALSE;
     }
     else if (strstr(command, "REORDER MATERIAL"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->bulkorder = TRUE;
     }
     else if (strstr(command, "REORDER BOUNDARY"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->boundorder = TRUE;
     }
@@ -1855,21 +1855,21 @@ int LoadCommands(char *prefix, struct ElmergridType *eg, struct GridType *grid,
     else if (strstr(command, "ISOPARAMETRIC"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->isoparam = TRUE;
     }
     else if (strstr(command, "NO BOUNDARY"))
     {
       for (j = 0; j < MAXLINESIZE; j++)
-        params[j] = toupper(params[j]);
+        params[j] = (char)toupper(params[j]);
       if (strstr(params, "TRUE"))
         eg->saveboundaries = FALSE;
     }
     else if (strstr(command, "LAYERED BOUNDARIES"))
     {
       for (i = 0; i < MAXLINESIZE; i++)
-        params[i] = toupper(params[i]);
+        params[i] = (char)toupper(params[i]);
       if (strstr(params, "TRUE"))
         grid->layeredbc = 1;
       if (strstr(params, "FALSE"))
@@ -3108,7 +3108,8 @@ end:
 
   for (k = nogrids0; k < (*nogrids) && k < MAXCASES; k++)
   {
-    SetElementDivision(&(*grid)[k], 1.0, info);
+    // SetElementDivision(&(*grid)[k], 1.0, info);
+    SetElementDivision(&(*grid)[k], 1.0);
   }
 
   fclose(in);
@@ -3189,7 +3190,7 @@ int LoadElmergrid(struct GridType **grid, int *nogrids, char *prefix, Real relh,
     else if (strstr(command, "DEBUG IO"))
     {
       for (i = 0; i < MAXLINESIZE; i++)
-        params[i] = toupper(params[i]);
+        params[i] = (char)toupper(params[i]);
       if (strstr(params, "FALSE"))
         iodebug = FALSE;
       else
@@ -3202,7 +3203,7 @@ int LoadElmergrid(struct GridType **grid, int *nogrids, char *prefix, Real relh,
     else if (strstr(command, "MATC"))
     {
       for (i = 0; i < MAXLINESIZE; i++)
-        params[i] = toupper(params[i]);
+        params[i] = (char)toupper(params[i]);
       if (strstr(params, "FALSE"))
         matcactive = FALSE;
       else
@@ -3223,7 +3224,7 @@ int LoadElmergrid(struct GridType **grid, int *nogrids, char *prefix, Real relh,
     else if (strstr(command, "COORDINATE SYSTEM"))
     {
       for (i = 0; i < MAXLINESIZE; i++)
-        params[i] = toupper(params[i]);
+        params[i] = (char)toupper(params[i]);
       grid[k]->dimension = 2;
       if (strstr(params, "CARTESIAN 1D"))
       {
@@ -3365,7 +3366,7 @@ int LoadElmergrid(struct GridType **grid, int *nogrids, char *prefix, Real relh,
     else if (strstr(command, "SUBCELL ORIGIN 1"))
     {
       for (i = 0; i < MAXLINESIZE; i++)
-        params[i] = toupper(params[i]);
+        params[i] = (char)toupper(params[i]);
       if (strstr(params, "CENTER"))
       {
         raid = 0.5 * (grid[k]->x[0] + grid[k]->x[grid[k]->xcells]);
@@ -3389,7 +3390,7 @@ int LoadElmergrid(struct GridType **grid, int *nogrids, char *prefix, Real relh,
     else if (strstr(command, "SUBCELL ORIGIN 2"))
     {
       for (i = 0; i < MAXLINESIZE; i++)
-        params[i] = toupper(params[i]);
+        params[i] = (char)toupper(params[i]);
       if (strstr(params, "CENTER"))
       {
         raid = 0.5 * (grid[k]->y[0] + grid[k]->y[grid[k]->ycells]);
@@ -3413,7 +3414,7 @@ int LoadElmergrid(struct GridType **grid, int *nogrids, char *prefix, Real relh,
     else if (strstr(command, "SUBCELL ORIGIN 3"))
     {
       for (i = 0; i < MAXLINESIZE; i++)
-        params[i] = toupper(params[i]);
+        params[i] = (char)toupper(params[i]);
       if (strstr(params, "CENTER"))
       {
         raid = 0.5 * (grid[k]->z[0] + grid[k]->z[grid[k]->zcells]);
@@ -3527,7 +3528,7 @@ int LoadElmergrid(struct GridType **grid, int *nogrids, char *prefix, Real relh,
         if (i > 0)
           Getline(params, in);
         for (j = 0; j < MAXLINESIZE; j++)
-          params[j] = toupper(params[j]);
+          params[j] = (char)toupper(params[j]);
         if (strstr(params, "END"))
           break;
         sscanf(params, "%d %d %d %d", &(*grid)[k].boundtype[i],
@@ -3547,7 +3548,7 @@ int LoadElmergrid(struct GridType **grid, int *nogrids, char *prefix, Real relh,
     else if (strstr(command, "NUMBERING"))
     {
       for (i = 0; i < MAXLINESIZE; i++)
-        params[i] = toupper(params[i]);
+        params[i] = (char)toupper(params[i]);
       if (strstr(params, "HORIZONATAL"))
         (*grid)[k].numbering = NUMBER_XY;
       if (strstr(params, "VERTICAL"))
@@ -3562,7 +3563,7 @@ int LoadElmergrid(struct GridType **grid, int *nogrids, char *prefix, Real relh,
     else if (strstr(command, "ELEMENT INNERNODES"))
     {
       for (i = 0; i < MAXLINESIZE; i++)
-        params[i] = toupper(params[i]);
+        params[i] = (char)toupper(params[i]);
       if (strstr(params, "TRUE"))
         (*grid)[k].elemmidpoints = TRUE;
       if (strstr(params, "FALSE"))
@@ -3581,7 +3582,7 @@ int LoadElmergrid(struct GridType **grid, int *nogrids, char *prefix, Real relh,
     else if (strstr(command, "TRIANGLES"))
     {
       for (i = 0; i < MAXLINESIZE; i++)
-        params[i] = toupper(params[i]);
+        params[i] = (char)toupper(params[i]);
       if (strstr(params, "TRUE"))
         (*grid)[k].triangles = TRUE;
       if (strstr(params, "FALSE"))
@@ -3604,7 +3605,7 @@ int LoadElmergrid(struct GridType **grid, int *nogrids, char *prefix, Real relh,
     else if (strstr(command, "VERIFY DENSITY"))
     {
       for (i = 0; i < MAXLINESIZE; i++)
-        params[i] = toupper(params[i]);
+        params[i] = (char)toupper(params[i]);
       if (strstr(params, "TRUE"))
         (*grid)[k].limitdxverify = TRUE;
       if (strstr(params, "FALSE"))
@@ -3701,7 +3702,7 @@ int LoadElmergrid(struct GridType **grid, int *nogrids, char *prefix, Real relh,
         (*grid)[k].mappings = 0;
 
       for (i = 0; i < MAXLINESIZE; i++)
-        params[i] = toupper(params[i]);
+        params[i] = (char)toupper(params[i]);
       for (i = (*grid)[k].mappings; i < MAXMAPPINGS; i++)
       {
         if (i > (*grid)[k].mappings)
@@ -3804,7 +3805,8 @@ end:
 
   for (k = nogrids0; k < (*nogrids) && k < MAXCASES; k++)
   {
-    SetElementDivision(&(*grid)[k], relh, info);
+    // SetElementDivision(&(*grid)[k], relh, info);
+    SetElementDivision(&(*grid)[k], relh);
   }
 
   fclose(in);

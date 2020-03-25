@@ -1,16 +1,42 @@
 
-IF(CMAKE_CROSSCOMPILING)
-  IF(NATIVE_BUILD_FLAGS)
-    IF(CMAKE_BUILD_TYPE)
-      STRING(TOUPPER _${CMAKE_BUILD_TYPE} _build_type)
-      SET(CMAKE_C_FLAGS${_build_type} "")
-    ENDIF()
-    SET(CMAKE_C_FLAGS ${NATIVE_BUILD_FLAGS})
-    MESSAGE(STATUS "Resetting build flags for Elmergrid: ${NATIVE_BUILD_FLAGS}")
-  ELSE()
-    MESSAGE(WARNING "Crosscompiling ElmerGrid, no native build flags set")
-  ENDIF()
-ENDIF()
+# IF(CMAKE_CROSSCOMPILING)
+#   IF(NATIVE_BUILD_FLAGS)
+#     IF(CMAKE_BUILD_TYPE)
+#       STRING(TOUPPER _${CMAKE_BUILD_TYPE} _build_type)
+#       SET(CMAKE_C_FLAGS${_build_type} "")
+#     ELSE()
+#       set(CMAKE_BUILD_TYPE Release)
+#     ENDIF()
+#     SET(CMAKE_C_FLAGS ${NATIVE_BUILD_FLAGS})
+#     MESSAGE(STATUS "Resetting build flags for Elmergrid: ${NATIVE_BUILD_FLAGS}")
+#   ELSE()
+#     MESSAGE(WARNING "Crosscompiling ElmerGrid, no native build flags set")
+#   ENDIF()
+# ENDIF()
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+cmake_policy(SET CMP0054 NEW)
+
+
+if (CMAKE_C_COMPILER_ID MATCHES "Clang")
+  # using regular Clang or AppleClang
+elseif (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+  # using Clang
+elseif (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+  set(CMAKE_C_FLAGS "-Wall -Wextra")
+  set(CMAKE_C_FLAGS_DEBUG "-g")
+  set(CMAKE_C_FLAGS_RELEASE "-O3")
+elseif (CMAKE_C_COMPILER_ID STREQUAL "Intel")
+  # using Intel C++
+elseif (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+  set(CMAKE_C_FLAGS "-Wall /wd4668 /wd4710 /wd4774 /wd5045 /wd4102 /wd4820 /wd4701 /wd4100 /wd4703")
+  set(CMAKE_C_FLAGS_RELEASE "-O2")  
+endif()
+
+
 
 IF(MSYS)
   INCLUDE_DIRECTORIES(${/mingw64/include/})

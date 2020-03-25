@@ -20,7 +20,7 @@ static Real timer_t0, timer_dt;
 static int timer_active = FALSE;
 static char timer_filename[600];
 
-void timer_init() { timer_active = FALSE; }
+// void timer_init(void) { timer_active = FALSE; }
 
 void timer_activate(const char *prefix) {
   Real time;
@@ -37,7 +37,7 @@ void timer_activate(const char *prefix) {
   timer_t0 = time;
 }
 
-void timer_show() {
+void timer_show(void) {
   static int visited = 0;
   Real time;
   FILE *out;
@@ -667,7 +667,7 @@ void SortIndex(int N, double *Key, int *Ord) {
 }
 
 int safeD2I(double inputVar) {
-  if ((inputVar < INT_MAX) || (INT_MIN < inputVar)) {
+  if ((inputVar <= INT_MAX) || (INT_MIN <= inputVar)) {
     return (int)inputVar;
   } else {
     // return (int) inputVar;

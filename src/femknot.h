@@ -71,7 +71,8 @@ void ReorderElements(struct FemType *data,struct BoundaryType *bound,
 int RemoveUnusedNodes(struct FemType *data,int info);
 void RenumberBoundaryTypes(struct FemType *data,struct BoundaryType *bound,
 			   int renumber, int bcoffset, int info);
-void RenumberMaterialTypes(struct FemType *data,struct BoundaryType *bound,int info);
+// void RenumberMaterialTypes(struct FemType *data,struct BoundaryType *bound,int info);
+void RenumberMaterialTypes(struct FemType *data, int info);
 void CreateKnotsExtruded(struct FemType *dataxy,struct BoundaryType *boundxy,
 			 struct GridType *grid,
 			 struct FemType *data,struct BoundaryType *bound,
@@ -79,8 +80,8 @@ void CreateKnotsExtruded(struct FemType *dataxy,struct BoundaryType *boundxy,
 void CylindricalCoordinateCurve(struct FemType *data,
 				Real zet,Real rad,Real angle);
 void ReduceElementOrder(struct FemType *data,int matmin,int matmax);
-void IsoparametricElements(struct FemType *data,struct BoundaryType *bound,
-			   int bcstoo,int info);
+// void IsoparametricElements(struct FemType *data,struct BoundaryType *bound, int bcstoo,int info);
+void IsoparametricElements(struct FemType *data,struct BoundaryType *bound, int info);
 void MergeElements(struct FemType *data,struct BoundaryType *bound,
 		   int manual,Real corder[],Real eps,int mergebounds,int info);
 void MergeBoundaries(struct FemType *data,struct BoundaryType *bound,int *doubles,int info);
@@ -102,16 +103,17 @@ int CreateBoundaryLayer(struct FemType *data,struct BoundaryType *bound,
 			int nolayers, int *layerbounds, int *layernumber,
 			Real *layerratios, Real *layerthickness, int *layerparents,
 			int maxfilters, Real layereps, int info);
-int CreateBoundaryLayerDivide(struct FemType *data,struct BoundaryType *bound,
-			      int nolayers, int *layerbounds, int *layernumber,
-			      Real *layerratios, Real *layerthickness, int *layerparents,int info);
+// int CreateBoundaryLayerDivide(struct FemType *data,struct BoundaryType *bound, int nolayers, int *layerbounds, int *layernumber, Real *layerratios, Real *layerthickness, int *layerparents,int info);
+int CreateBoundaryLayerDivide(struct FemType *data,struct BoundaryType *bound, int nolayers, int *layerbounds, int *layernumber, Real *layerratios, Real *layerthickness, int info);
 int RotateTranslateScale(struct FemType *data,struct ElmergridType *eg,int info);
 int RemoveLowerDimensionalBoundaries(struct FemType *data,struct BoundaryType *bound,int info);
 int RemoveInternalBoundaries(struct FemType *data,struct BoundaryType *bound,int info);
 int CreateNodalGraph(struct FemType *data,int full,int info);
 int DestroyNodalGraph(struct FemType *data,int info);
 int CreateDualGraph(struct FemType *data,int unconnected,int info);
-int DestroyDualGraph(struct FemType *data,int info);
+// int DestroyDualGraph(struct FemType *data,int info);
+int DestroyDualGraph(struct FemType *data);
 int CreateInverseTopology(struct FemType *data,int info);
-int DestroyInverseTopology(struct FemType *data,int info);
+// int DestroyInverseTopology(struct FemType *data,int info);
+int DestroyInverseTopology(struct FemType *data);
 int MeshTypeStatistics(struct FemType *data,int info);

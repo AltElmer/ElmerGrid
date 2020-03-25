@@ -38,10 +38,10 @@
 /*#include <strings.h>*/
 /*#include <unistd.h>*/
 
-#include "femtypes.h"
 #include "femdef.h"
 #include "femfilein.h"
 #include "femknot.h"
+#include "femtypes.h"
 #include "nrutil.h"
 
 #define GETLINE getlineptr = fgets(line, MAXLINESIZE, in)
@@ -75,7 +75,7 @@ newline:
   if (upper)
   {
     for (i = 0; i < MAXLINESIZE; i++)
-      line1[i] = toupper(line0[i]);
+      line1[i] = (char)toupper(line0[i]);
   }
   else
   {
@@ -372,7 +372,7 @@ int LoadAbaqusInput(struct FemType *data, struct BoundaryType *bound,
 {
   int noknots, noelements, elemcode, maxnodes, material, maxelem, nodeoffset;
   // int mode,allocated,nvalue,nvalue2,maxknot,nosides,elemnodes,ncum;
-  int mode, allocated, nvalue, maxknot, elemnodes, ncum;
+  int mode, allocated, nvalue, maxknot, elemnodes = 0, ncum;
   // int boundarytype,boundarynodes,elsetactive,elmatactive,cont;
   int boundarytype, boundarynodes, elsetactive, elmatactive;
   int *nodeindx = NULL, *boundindx = NULL, *materials = NULL, *elemindx = NULL;
@@ -384,7 +384,7 @@ int LoadAbaqusInput(struct FemType *data, struct BoundaryType *bound,
   Real rvalues[MAXDOFS];
   int ivalues[MAXDOFS], ivalues0[MAXDOFS];
   // int setmaterial;
-  int debug, firstline;
+  int debug, firstline = 0;
   char entityname[MAXNAMESIZE];
 
   strcpy(filename, prefix);
@@ -475,7 +475,7 @@ omstart:
       }
       else if (strstr(line, "*NODE"))
       {
-        if (pstr = strstr(line, "NODE OUTPUT"))
+        if (pstr == strstr(line, "NODE OUTPUT"))
         {
           mode = 10;
         }
@@ -492,7 +492,7 @@ omstart:
       }
       else if (strstr(line, "*ELEMENT"))
       {
-        if (pstr = strstr(line, "ELEMENT OUTPUT"))
+        if (pstr == strstr(line, "ELEMENT OUTPUT"))
         {
           mode = 10;
         }
@@ -525,7 +525,7 @@ omstart:
           else
             printf("Unknown element code: %s\n", line);
 
-          if (pstr = strstr(line, "ELSET="))
+          if (pstr == strstr(line, "ELSET="))
           {
             if (allocated)
             {
@@ -581,7 +581,7 @@ omstart:
           printf("Treating keyword CLOAD\n");
         }
       }
-      else if (pstr = strstr(line, "NSET="))
+      else if (pstr == strstr(line, "NSET="))
       {
         if (strstr(line, "ELSET="))
         {
@@ -599,7 +599,7 @@ omstart:
           }
         }
       }
-      else if (pstr = strstr(line, "ELSET="))
+      else if (pstr == strstr(line, "ELSET="))
       {
         elsetactive = TRUE;
         material += 1;
@@ -614,7 +614,7 @@ omstart:
           data->boundarynamesexist = TRUE;
         }
       }
-      else if (pstr = strstr(line, "PART, NAME="))
+      else if (pstr == strstr(line, "PART, NAME="))
       {
         elmatactive = TRUE;
         material += 1;
@@ -629,7 +629,7 @@ omstart:
           data->boundarynamesexist = TRUE;
         }
       }
-      else if (pstr = strstr(line, "HWCOLOR"))
+      else if (pstr == strstr(line, "HWCOLOR"))
       {
         /* unused command */
         mode = 0;
@@ -999,7 +999,7 @@ static int ReadAbaqusField(FILE *in, char *buffer, int *argtype, int *argno)
       val = fgetc(in);
       if (val == '\n')
         val = fgetc(in);
-      buffer[i] = val;
+      buffer[i] = (char)val;
     }
     buffer[2] = '\0';
     digits = atoi(buffer);
@@ -1008,7 +1008,7 @@ static int ReadAbaqusField(FILE *in, char *buffer, int *argtype, int *argno)
       val = fgetc(in);
       if (val == '\n')
         val = fgetc(in);
-      buffer[i] = val;
+      buffer[i] = (char)val;
     }
     buffer[digits] = '\0';
     (*argno)++;
@@ -1027,7 +1027,7 @@ static int ReadAbaqusField(FILE *in, char *buffer, int *argtype, int *argno)
         val = fgetc(in);
       if (val == 'D')
         val = 'E';
-      buffer[i] = val;
+      buffer[i] = (char)val;
     }
     buffer[22] = '\0';
     (*argno)++;
@@ -1040,7 +1040,7 @@ static int ReadAbaqusField(FILE *in, char *buffer, int *argtype, int *argno)
       val = fgetc(in);
       if (val == '\n')
         val = fgetc(in);
-      buffer[i] = val;
+      buffer[i] = (char)val;
     }
     buffer[8] = '\0';
     (*argno)++;
@@ -1048,7 +1048,7 @@ static int ReadAbaqusField(FILE *in, char *buffer, int *argtype, int *argno)
   }
   else
   {
-    buffer[0] = val;
+    buffer[0] = (char)val;
     buffer[1] = '\0';
     (*argtype) = 0;
   }
@@ -1286,7 +1286,7 @@ jump:
   return (0);
 }
 
-int LoadNastranInput(struct FemType *data, struct BoundaryType *bound,
+int LoadNastranInput(struct FemType *data, // struct BoundaryType *bound,
                      char *prefix, int info)
 /* Load the grid from a format that in Nastran format
  */
@@ -1295,7 +1295,7 @@ int LoadNastranInput(struct FemType *data, struct BoundaryType *bound,
   int allocated, maxknot, minknot, nodes;
   char filename[MAXFILESIZE];
   char line[MAXLINESIZE], *cp;
-  int j, k;
+  int j, k = 0;
   FILE *in;
 
   strcpy(filename, prefix);
@@ -2063,8 +2063,7 @@ int LoadAnsysInput(struct FemType *data, struct BoundaryType *bound,
 
   if (info)
     printf("Calculating Ansys elementtypes from %s\n", filename);
-  for (i = 0; GETLINE; i++)
-    ;
+  // for (i = 0; GETLINE; i++);
 
   noansystypes = i - 1;
   printf("There seems to be %d elementytypes in file %s.\n", noansystypes,
@@ -2127,8 +2126,7 @@ int LoadAnsysInput(struct FemType *data, struct BoundaryType *bound,
 
   if (info)
     printf("Calculating Ansys nodes from %s\n", filename);
-  for (i = 0; GETLINE; i++)
-    ;
+  // for (i = 0; GETLINE; i++);
 
   if (info)
     printf("There seems to be %d nodes in file %s.\n", i, filename);
@@ -2994,12 +2992,12 @@ int LoadTriangleInput(struct FemType *data, struct BoundaryType *bound,
   return (0);
 }
 
-int LoadMeditInput(struct FemType *data, struct BoundaryType *bound,
+int LoadMeditInput(struct FemType *data, // struct BoundaryType *bound,
                    char *prefix, int info)
 /* This procedure reads the mesh assuming Medit format
  */
 {
-  int noknots, noelements, maxnodes, dim = 0, elementtype;
+  int noknots = 0, noelements = 0, maxnodes, dim = 0, elementtype; // this doesn't make sense, noelements doesn't change within this scope!
   int i, j, allocated;
   FILE *in;
   char *cp, line[MAXLINESIZE], nodefile[MAXFILESIZE];
@@ -3142,7 +3140,7 @@ int LoadGidInput(struct FemType *data, struct BoundaryType *bound, char *prefix,
   char filename[MAXFILESIZE], line[MAXLINESIZE], *cp;
   int i, j, k, n, ind, inds[MAXNODESD2], sideind[MAXNODESD1];
   FILE *in;
-  Real x, y, z;
+  Real x, y, z = 0;
 
   debug = FALSE;
 
@@ -4421,7 +4419,8 @@ end:
   if (usetaggeom)
   {
     RenumberBoundaryTypes(data, bound, TRUE, 0, info);
-    RenumberMaterialTypes(data, bound, info);
+    // RenumberMaterialTypes(data, bound, info);
+    RenumberMaterialTypes(data, info);
   }
   data->bodynamesexist = physvolexist;
   data->boundarynamesexist = physsurfexist;
@@ -4440,7 +4439,7 @@ static int LoadGmshInput4(struct FemType *data, struct BoundaryType *bound,
   int elemind[MAXNODESD2], elementtype;
   int i, j, k, l, allocated, *revindx = NULL, maxindx;
   // int elemno, gmshtype, tagphys=0, taggeom=0, tagpart, elemnodes,maxelemtype;
-  int elemno, gmshtype, tagphys = 0, taggeom = 0, elemnodes, maxelemtype;
+  int elemno, gmshtype, tagphys = 0, elemnodes, maxelemtype;
   // int tagmat,verno;
   int verno;
   int physvolexist, physsurfexist, **tagmap, tagsize, maxtag[4];
@@ -4973,7 +4972,7 @@ static int LoadGmshInput41(struct FemType *data, struct BoundaryType *bound,
   int elemind[MAXNODESD2], elementtype;
   int i, j, k, l, allocated, *revindx = NULL, maxindx;
   // int elemno, gmshtype, tagphys=0, taggeom=0, tagpart, elemnodes,maxelemtype;
-  int elemno, gmshtype, tagphys = 0, taggeom = 0, elemnodes, maxelemtype;
+  int elemno, gmshtype, tagphys = 0, elemnodes, maxelemtype;
   // int tagmat, verno;
   int verno;
   int physvolexist, physsurfexist, **tagmap, tagsize;
@@ -5054,8 +5053,8 @@ omstart:
         parTag = next_int(&cp);
         numNodes = next_int(&cp);
 
-        if (0 && numNodes > 1)
-          printf("Reading node block %d with %d nodes\n", j, numNodes);
+        // if (0 && numNodes > 1)
+        //   printf("Reading node block %d with %d nodes\n", j, numNodes);
 
         for (i = 1; i <= numNodes; i++)
         {
@@ -5064,8 +5063,8 @@ omstart:
 
           ind = next_int(&cp);
 
-          if (0 && numNodes > 1)
-            printf("block %d node %d ind %d %d\n", j, i, ind, k + i);
+          // if (0 && numNodes > 1)
+          //   printf("block %d node %d ind %d %d\n", j, i, ind, k + i);
 
           if (allocated)
           {
@@ -5600,7 +5599,8 @@ int LoadFvcomMesh(struct FemType *data, struct BoundaryType *bound,
 {
   int noknots = 0, noelements = 0, maxnodes, dim;
   // int elemind[MAXNODESD2], elementtype;
-  int i, j, k, allocated, *revindx = NULL, maxindx;
+  // int i, j, k, allocated, *revindx = NULL, maxindx;
+  int i, j, k, allocated, maxindx;
   // int elemnodes, maxelemtype, elemtype0, bclines;
   int maxelemtype, bclines;
   // int usetaggeom, tagmat, bccount;
@@ -5762,7 +5762,7 @@ int LoadGeoInput(struct FemType *data, struct BoundaryType *bound,
   int noknots = 0, noelements = 0, maxnodes, dim;
   int elemind[MAXNODESD2], elementtype;
   int i, j, k, allocated, *revindx = NULL, maxindx;
-  int elemnodes, maxelemtype, elemtype0;
+  int elemnodes, maxelemtype, elemtype0 = 0;
   int usetaggeom, tagmat;
   FILE *in;
   char *cp, line[MAXLINESIZE];
@@ -6111,13 +6111,14 @@ static void UnvToElmerIndx(int elemtype, int *topology)
   }
 }
 
-int LoadUniversalMesh(struct FemType *data, struct BoundaryType *bound,
+int LoadUniversalMesh(struct FemType *data, // struct BoundaryType *bound,
                       char *prefix, int info)
 /* Load the grid in universal file format. This format includes thousands of
    possible fields and hence the parser can never be exhaustive. Just the mostly
    common used fields in FE community are treated. */
 {
-  int noknots, totknots, noelements, elemcode, maxnodes;
+  // int noknots, totknots, noelements, elemcode, maxnodes;
+  int noknots, noelements, elemcode, maxnodes;
   int allocated, dim, ind, lines;
   int reordernodes, reorderelements, nogroups, maxnodeind, maxelem, elid,
       unvtype, elmertype;
@@ -6671,7 +6672,7 @@ omstart:
 
 end:
 
-  exit(-1);
+  exit(-1); /*
   // if(0) printf("Done reading mesh\n");
 
   if (!allocated)
@@ -6722,6 +6723,7 @@ end:
 
     /* Set an offset for physical indexes so that the defined groups and
        existing physical indexes won't mix confusingly */
+            /*
     if (maxphys >= mingroup && minphys <= maxgroup)
     {
       physoffset = maxgroup - minphys + 1;
@@ -6747,6 +6749,7 @@ end:
   /* If the physical index may be zero, then we have a risk that there is
      an unset material index. Elmer does not like material indexes of zeros.
      This could be made prettier as now the almost same thing is done twice. */
+            /*
   if (minphys + physoffset == 0)
   {
     mingroup = INT_MAX;
@@ -6772,6 +6775,7 @@ end:
 
   /* Elmer likes that node indexes are given so that no integers are missed.
      If this is not the case we need to do renumbering of nodes. */
+            /*
   if (reordernodes)
   {
     printf("Reordering nodes continuously\n");
@@ -6786,6 +6790,7 @@ end:
   }
 
   /* Do scaling if requested */
+  /*
   if (doscaling)
   {
     Real *coord;
@@ -6807,6 +6812,7 @@ end:
   }
 
   /* This is here for debugging of the nodal order */
+  /*
   if (FALSE)
     for (j = 1; j <= noelements; j++)
     {
@@ -6822,12 +6828,13 @@ end:
 
   /* Until this far all elements have been listed as bulk elements.
      Now separate the lower dimensional elements to be boundary elements. */
+  /*
   ElementsToBoundaryConditions(data, bound, TRUE, info);
 
   if (info)
     printf("The Universal mesh was loaded from file %s.\n\n", filename);
 
-  return (0);
+  return (0); */
 }
 
 int LoadCGsimMesh(struct FemType *data, char *prefix, int info)

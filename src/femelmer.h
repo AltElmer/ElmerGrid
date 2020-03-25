@@ -25,7 +25,7 @@ int PartitionSimpleElementsNonRecursive(struct FemType *data,
 int PartitionConnectedElementsMetis(struct FemType *data,struct BoundaryType *bound,
 				    int nparts,int metisopt,int info);
 #endif
-int ExtendBoundaryPartitioning(struct FemType *data,struct BoundaryType *bound,
+int ExtendBoundaryPartitioning(struct FemType *data, //struct BoundaryType *bound,
 			       int elemlayers,int info);
 int PartitionSimpleElementsRotational(struct FemType *data,int dimpart[],int dimper[],
 				      int info);
@@ -45,8 +45,8 @@ int PartitionMetisGraph(struct FemType *data,struct BoundaryType *bound,
 int ReorderElementsMetis(struct FemType *data,int info);
 #endif
 int OptimizePartitioningAtBoundary(struct FemType *data,struct BoundaryType *bound,int info);
-int OptimizePartitioning(struct FemType *data,struct BoundaryType *bound,int noopt,
-			 int partbw,int info);
+// int OptimizePartitioning(struct FemType *data, struct BoundaryType *bound, int noopt, int partbw,int info);
+int OptimizePartitioning(struct FemType *data, int noopt, int partbw, int info);
 int SaveElmerInputPartitioned(struct FemType *data,struct BoundaryType *bound,
 			      char *prefix,int decimals,int *parthalo,int indirect,
 			      int parthypre,int subparts,int nooverwrite, int info);

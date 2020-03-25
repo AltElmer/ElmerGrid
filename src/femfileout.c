@@ -424,7 +424,7 @@ int SaveMeshGmsh(struct FemType *data, struct BoundaryType *bound, int nobound,
   }
 
   fprintf(out, "$MeshFormat\n");
-  fprintf(out, "2.2 0 %ld\n", sizeof(double));
+  fprintf(out, "2.2 0 %u\n", sizeof(double));
   fprintf(out, "$EndMeshFormat\n");
 
   if (info)

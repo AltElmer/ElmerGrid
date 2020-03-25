@@ -20,17 +20,23 @@
 #define FALSE 0
 
 #include <stddef.h>
-#include "femtypes.h"
+
 
 #ifdef _WIN32
 // #define _CRT_SECURE_NO_DEPRECATE
 #pragma warning (disable : 4996)
+#pragma warning (disable : 4668)
+#pragma warning (disable : 4820)
+#pragma warning (disable : 4710)
+#pragma warning (disable : 4774)
 #define _USE_MATH_DEFINES
 #endif
 
-void timer_init();
+#include "femtypes.h"
+
+// void timer_init(void);
 void timer_activate(const char *prefix);
-void timer_show();
+void timer_show(void);
 
 void bigerror(char error_text[]);
 void smallerror(char error_text[]);
@@ -100,7 +106,7 @@ int safeD2I(double inputVar);
 //         p->usematc = TRUE;\
 //     }
 // #else
-// static void *nop() { return NULL; }
+// static void *nop(void) { return NULL; }
 // #   define MTC_DOMATH(cmd) nop()
 // #   define MTC_INIT(p) {\
 //         fprintf(stderr, "WARNING: This version of ElmerParam was compiled "\

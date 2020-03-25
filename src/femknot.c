@@ -1090,8 +1090,8 @@ static void MovePointCircle(Real *lim, int points, Real *coords, Real x, Real y,
   }
 }
 
-static void MovePointLinear(Real *lim, int points, Real *coords, Real x, Real y,
-                            Real *dx, Real *dy)
+// static void MovePointLinear(Real *lim, int points, Real *coords, Real x, Real y, Real *dx, Real *dy)
+static void MovePointLinear(Real *lim, int points, Real *coords, Real x, Real y, Real *dy)
 {
   static int i = 0;
   Real c, d;
@@ -1167,8 +1167,8 @@ static void MovePointAngle(Real *lim, int points, Real *coords, Real x, Real y,
   }
 }
 
-static void MovePointSinus(Real *lim, int points, Real *coords, Real x, Real y,
-                           Real *dx, Real *dy)
+// static void MovePointSinus(Real *lim, int points, Real *coords, Real x, Real y, Real *dx, Real *dy)
+static void MovePointSinus(Real *lim, Real *coords, Real x, Real y, Real *dy)
 {
   Real c, d;
 
@@ -1196,8 +1196,8 @@ static void MovePointSinus(Real *lim, int points, Real *coords, Real x, Real y,
   }
 }
 
-static void MovePointPowerSeries(Real *lim, int points, Real *coords, Real x,
-                                 Real y, Real *dx, Real *dy)
+// static void MovePointPowerSeries(Real *lim, int points, Real *coords, Real x, Real y, Real *dx, Real *dy)
+static void MovePointPowerSeries(Real *lim, int points, Real *coords, Real x, Real y, Real *dy)
 {
   int i, n;
   Real d, t, u;
@@ -1240,8 +1240,8 @@ static void MovePointPowerSeries(Real *lim, int points, Real *coords, Real x,
   }
 }
 
-static void MovePointPowerSeries2(Real *lim, int points, Real *coords, Real x,
-                                  Real y, Real *dx, Real *dy)
+// static void MovePointPowerSeries2(Real *lim, int points, Real *coords, Real x, Real y, Real *dx, Real *dy)
+static void MovePointPowerSeries2(Real *lim, int points, Real *coords, Real x, Real y, Real *dy)
 {
   int i, j, n;
   Real d, e, t, u, h;
@@ -1293,8 +1293,8 @@ static void MovePointPowerSeries2(Real *lim, int points, Real *coords, Real x,
   }
 }
 
-static void MovePointPower(Real *lim, int points, Real *coords, Real x, Real y,
-                           Real *dx, Real *dy)
+// static void MovePointPower(Real *lim, int points, Real *coords, Real x, Real y, Real *dx, Real *dy)
+static void MovePointPower(Real *lim, int points, Real *coords, Real x, Real y, Real *dy)
 {
   static int i = 0;
   Real c, d;
@@ -1328,8 +1328,8 @@ static void MovePointPower(Real *lim, int points, Real *coords, Real x, Real y,
 }
 
 /* Creates airfoil shapes */
-static void MovePointNACAairfoil(Real *lim, int points, Real *coords, Real x,
-                                 Real y, Real *dx, Real *dy)
+// static void MovePointNACAairfoil(Real *lim, int points, Real *coords, Real x, Real y, Real *dx, Real *dy)
+static void MovePointNACAairfoil(Real *lim, Real *coords, Real x, Real y, Real *dy)
 {
   Real p, d, t, u;
 
@@ -1379,8 +1379,8 @@ static void MovePointNACAairfoil(Real *lim, int points, Real *coords, Real x,
     printf("d=%.3e p=%.3e u=%.3e dy=%.3e\n", d, p, u, *dy);
 }
 
-static void MovePointArc(Real *lim, int points, Real *coords, Real x, Real y,
-                         Real *dx, Real *dy)
+// static void MovePointArc(Real *lim, int points, Real *coords, Real x, Real y, Real *dx, Real *dy)
+static void MovePointArc(Real *lim, int points, Real *coords, Real x, Real y, Real *dy)
 {
   static int i = 0;
   Real sx, sy, ss, r, rat, d, x0, y0;
@@ -1469,7 +1469,7 @@ void CreateKnots(struct GridType *grid, struct CellType *cell,
     for (j = 1; j <= grid->yelems[cellj]; j++) /* lines inside cells     */
       for (celli = 1; celli <= grid->xcells;
            celli++) /* cells direction right  */
-        if (k = grid->numbered[cellj][celli])
+        if (k == grid->numbered[cellj][celli])
         {
           material = cell[k].material;
           for (i = 1; i <= grid->xelems[celli]; i++)
@@ -1534,76 +1534,75 @@ void CreateKnots(struct GridType *grid, struct CellType *cell,
           switch (mode)
           {
           case 1:
-            MovePointLinear(&maplim[3 * k], grid->mappingpoints[k],
-                            grid->mappingparams[k], x, y, &dx, &dy);
+            MovePointLinear(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], x, y, &dy);
             break;
           case 2:
-            MovePointPower(&maplim[3 * k], grid->mappingpoints[k],
-                           grid->mappingparams[k], x, y, &dx, &dy);
+            // MovePointPower(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], x, y, &dx, &dy);
+            MovePointPower(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], x, y, &dy);
             break;
           case 3:
-            MovePointArc(&maplim[3 * k], grid->mappingpoints[k],
-                         grid->mappingparams[k], x, y, &dx, &dy);
+            // MovePointArc(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], x, y, &dx, &dy);
+            MovePointArc(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], x, y, &dy);
             break;
           case 4:
             MovePointCircle(&maplim[3 * k], grid->mappingpoints[k],
                             grid->mappingparams[k], x, y, &dx, &dy);
             break;
           case 5:
-            MovePointSinus(&maplim[3 * k], grid->mappingpoints[k],
-                           grid->mappingparams[k], x, y, &dx, &dy);
+            // MovePointSinus(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], x, y, &dx, &dy);
+            MovePointSinus(&maplim[3 * k], grid->mappingparams[k], x, y, &dy);
             break;
           case 6:
-            MovePointPowerSeries(&maplim[3 * k], grid->mappingpoints[k],
-                                 grid->mappingparams[k], x, y, &dx, &dy);
+            // MovePointPowerSeries(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], x, y, &dx, &dy);
+            MovePointPowerSeries(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], x, y, &dy);
             break;
           case 7:
-            MovePointPowerSeries2(&maplim[3 * k], grid->mappingpoints[k],
-                                  grid->mappingparams[k], x, y, &dx, &dy);
+            // MovePointPowerSeries2(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], x, y, &dx, &dy);
+            MovePointPowerSeries2(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], x, y, &dy);
             break;
           case 8:
             MovePointAngle(&maplim[3 * k], grid->mappingpoints[k],
                            grid->mappingparams[k], x, y, &dx, &dz);
             break;
           case 9:
-            MovePointNACAairfoil(&maplim[3 * k], grid->mappingpoints[k],
-                                 grid->mappingparams[k], x, y, &dx, &dy);
+            // MovePointNACAairfoil(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], x, y, &dx, &dy);
+            MovePointNACAairfoil(&maplim[3 * k], grid->mappingparams[k], x, y, &dy);
             break;
 
           case -1:
-            MovePointLinear(&maplim[3 * k], grid->mappingpoints[k],
-                            grid->mappingparams[k], y, x, &dy, &dx);
+            // MovePointLinear(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], y, x, &dy, &dx);
+            MovePointLinear(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], y, x, &dx);
             break;
           case -2:
-            MovePointPower(&maplim[3 * k], grid->mappingpoints[k],
-                           grid->mappingparams[k], y, x, &dy, &dx);
+            // MovePointPower(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], y, x, &dy, &dx);
+            MovePointPower(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], y, x, &dx);
             break;
           case -3:
-            MovePointArc(&maplim[3 * k], grid->mappingpoints[k],
-                         grid->mappingparams[k], y, x, &dy, &dx);
+            // MovePointArc(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], y, x, &dy, &dx);
+            MovePointArc(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], y, x, &dx);
             break;
           case -4:
             MovePointCircle(&maplim[3 * k], grid->mappingpoints[k],
                             grid->mappingparams[k], y, x, &dy, &dx);
             break;
           case -5:
-            MovePointSinus(&maplim[3 * k], grid->mappingpoints[k],
-                           grid->mappingparams[k], y, x, &dy, &dx);
+            // MovePointSinus(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], y, x, &dy, &dx);
+            MovePointSinus(&maplim[3 * k], grid->mappingparams[k], y, x, &dx);
             break;
           case -6:
-            MovePointPowerSeries(&maplim[3 * k], grid->mappingpoints[k],
-                                 grid->mappingparams[k], y, x, &dy, &dx);
+            // MovePointPowerSeries(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], y, x, &dy, &dx);
+            MovePointPowerSeries(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], y, x, &dx);
             break;
           case -7:
-            MovePointPowerSeries2(&maplim[3 * k], grid->mappingpoints[k],
-                                  grid->mappingparams[k], y, x, &dy, &dx);
+            // MovePointPowerSeries2(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], y, x, &dy, &dx);
+            MovePointPowerSeries2(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], y, x, &dx);
             break;
           case -8:
             MovePointAngle(&maplim[3 * k], grid->mappingpoints[k],
                            grid->mappingparams[k], y, x, &dy, &dz);
           case -9:
-            MovePointNACAairfoil(&maplim[3 * k], grid->mappingpoints[k],
-                                 grid->mappingparams[k], y, x, &dy, &dx);
+            // MovePointNACAairfoil(&maplim[3 * k], grid->mappingpoints[k], grid->mappingparams[k], y, x, &dy, &dx);
+            MovePointNACAairfoil(&maplim[3 * k], grid->mappingparams[k], y, x, &dx);
             break;
           }
         }
@@ -2369,7 +2368,7 @@ static int CreateNewNodes(struct FemType *data, int *order, int material,
 
     for (k = 1; k < MAXDOFS; k++)
     {
-      if (lmax = data->edofs[k])
+      if (lmax == data->edofs[k])
         for (l = 1; l <= lmax; l++)
           newdofs[k][lmax * (j - 1) + l] = data->dofs[k][lmax * (i - 1) + l];
     }
@@ -2384,7 +2383,7 @@ static int CreateNewNodes(struct FemType *data, int *order, int material,
 
       for (k = 1; k < MAXDOFS; k++)
       {
-        if (lmax = data->edofs[k])
+        if (lmax == data->edofs[k])
           for (l = 1; l <= lmax; l++)
             newdofs[k][lmax * (j - 1) + l] = data->dofs[k][lmax * (i - 1) + l];
       }
@@ -3011,12 +3010,12 @@ omstart:
         continue;
 
       /* point (i,j) must now be a corner */
-      if (cellno = grid->numbered[j][i])
+      if (cellno == grid->numbered[j][i])
       {
         elem = GetElementIndex(&(cell)[cellno], 1, 1);
         ind = BOTLEFT;
       }
-      else if (cellno = grid->numbered[j][i - 1])
+      else if (cellno == grid->numbered[j][i - 1])
       {
         elem = GetElementIndex(&(cell)[cellno], cell[cellno].xelem, 1);
         ind = BOTRIGHT;
@@ -3126,8 +3125,8 @@ int SolutionFromMeshToMesh(struct CellType *cell1, struct GridType *grid1,
     for (ycell = 1; ycell <= MAXCELLS; ycell++)
 
       /* Go through cells that are common to both grids. */
-      if ((no1 = grid1->numbered[ycell][xcell]) &&
-          (no2 = grid2->numbered[ycell][xcell]))
+      if ((no1 == grid1->numbered[ycell][xcell]) &&
+          (no2 == grid2->numbered[ycell][xcell]))
       {
 
         if (0)
@@ -4630,7 +4629,7 @@ static void ReorderAutomatic(struct FemType *data, int iterations,
 
     for (l = 1; l <= maxnodes; l++)
     {
-      if (ind = neighbours[j][l])
+      if (ind == neighbours[j][l])
       {
         nolocal++;
         localtmp[l] = ind;
@@ -5103,7 +5102,7 @@ void RenumberBoundaryTypes(struct FemType *data, struct BoundaryType *bound,
   }
 }
 
-void RenumberMaterialTypes(struct FemType *data, struct BoundaryType *bound,
+void RenumberMaterialTypes(struct FemType *data, //struct BoundaryType *bound,
                            int info)
 {
   int i, j, noelements, doinit;
@@ -5613,7 +5612,7 @@ omstart:
 
     for (i = 1; i <= nosides; i++)
     {
-      if (j = bound[newbound].parent2[i])
+      if (j == bound[newbound].parent2[i])
       {
         if (bound[newbound].parent[i] > bound[newbound].parent2[i])
         {
@@ -8136,9 +8135,9 @@ void CreateKnotsExtruded(struct FemType *dataxy, struct BoundaryType *boundxy,
     CylindricalCoordinateImprove(data, grid->rotateimprove, grid->rotateradius1,
                                  grid->rotateradius2);
 
-    if (0 && grid->rotatecurve)
-      CylindricalCoordinateCurve(data, grid->curvezet, grid->curverad,
-                                 grid->curveangle);
+    // if (0 && grid->rotatecurve)
+    //   CylindricalCoordinateCurve(data, grid->curvezet, grid->curverad,
+    //                              grid->curveangle);
 
     if (grid->rotatecartesian)
       SeparateMainaxisBoundaries(data, bound);
@@ -8156,7 +8155,7 @@ void CreateKnotsExtruded(struct FemType *dataxy, struct BoundaryType *boundxy,
   /* Enforce constant helicity for the mesh if requested */
   if (grid->zhelicityexists)
   {
-    Real helicity, fii, x, y, z, minz, maxz;
+    Real helicity, fii, x, y, zz, minz, maxz;
 
     helicity = (M_PI / 180.0) * grid->zhelicity;
 
@@ -8170,8 +8169,8 @@ void CreateKnotsExtruded(struct FemType *dataxy, struct BoundaryType *boundxy,
     {
       x = data->x[i];
       y = data->y[i];
-      z = data->z[i];
-      fii = helicity * (z - minz) / (maxz - minz);
+      zz = data->z[i];
+      fii = helicity * (zz - minz) / (maxz - minz);
 
       data->x[i] = cos(fii) * x - sin(fii) * y;
       data->y[i] = sin(fii) * x + cos(fii) * y;
@@ -8442,8 +8441,8 @@ void MergeBoundaries(struct FemType *data, struct BoundaryType *bound,
            totsides - newsides, totsides);
 }
 
-void IsoparametricElements(struct FemType *data, struct BoundaryType *bound,
-                           int bcstoo, int info)
+// void IsoparametricElements(struct FemType *data, struct BoundaryType *bound, int bcstoo, int info)
+void IsoparametricElements(struct FemType *data, struct BoundaryType *bound, int info)
 {
   int i, j, k;
   int noelements, noknots;
@@ -9525,7 +9524,7 @@ setparents:
 
         for (l2 = 1; l2 <= periodichits[targetnode]; l2++)
         {
-          int side, elemtype, elemsides, sideelemtype2;
+          int side1, elemtype, elemsides, sideelemtype2;
 
           parent2 = periodicparents[targetnode][l2];
           if (parent == parent2)
@@ -9534,9 +9533,9 @@ setparents:
           elemtype = data->elementtypes[parent2];
           elemsides = GetElementFaces(elemtype);
 
-          for (side = 0; side < elemsides; side++)
+          for (side1 = 0; side1 < elemsides; side1++)
           {
-            GetElementSide(parent2, side, 1, data, sideind2, &sideelemtype2);
+            GetElementSide(parent2, side1, 1, data, sideind2, &sideelemtype2);
             if (sideelemtype != sideelemtype2)
               continue;
 
@@ -10881,10 +10880,8 @@ omstart:
   return (0);
 }
 
-int CreateBoundaryLayerDivide(struct FemType *data, struct BoundaryType *bound,
-                              int nolayers, int *layerbounds, int *layernumber,
-                              Real *layerratios, Real *layerthickness,
-                              int *layerparents, int info)
+// int CreateBoundaryLayerDivide(struct FemType *data, struct BoundaryType *bound, int nolayers, int *layerbounds, int *layernumber, Real *layerratios, Real *layerthickness, int *layerparents, int info)
+int CreateBoundaryLayerDivide(struct FemType *data, struct BoundaryType *bound, int nolayers, int *layerbounds, int *layernumber, Real *layerratios, Real *layerthickness, int info)
 /* Create Boundary layers that may be used to solve accurately fluid
    flow problems and similar equations. In this subroutine the boundary layer
    is created by dividing the elements close to boundary. */
@@ -12034,23 +12031,23 @@ omstart:
           "The orphan elements are likely caused by the hybrid partitioning\n");
   }
 
-#if 0
-  j = totcon; k = 0;
-  for(i=1;i<=dualsize;i++){
-    l = dualrow[i]-dualrow[i-1];
-    if(l <= 0 ) printf("row(%d) = %d %d %d\n",i,l,dualrow[i],dualrow[i-1]);
-    j = MIN(j,l);
-    k = MAX(k,l);
-  }
-  printf("range dualrow: %d %d\n",j,k);
+  // #if 0
+  //   j = totcon; k = 0;
+  //   for(i=1;i<=dualsize;i++){
+  //     l = dualrow[i]-dualrow[i-1];
+  //     if(l <= 0 ) printf("row(%d) = %d %d %d\n",i,l,dualrow[i],dualrow[i-1]);
+  //     j = MIN(j,l);
+  //     k = MAX(k,l);
+  //   }
+  //   printf("range dualrow: %d %d\n",j,k);
 
-  j = totcon; k = 0;
-  for(i=0;i<totcon;i++) {
-    j = MIN(j,dualcol[i]);
-    k = MAX(k,dualcol[i]);
-  }
-  printf("range dualcol: %d %d\n",j,k);
-#endif
+  //   j = totcon; k = 0;
+  //   for(i=0;i<totcon;i++) {
+  //     j = MIN(j,dualcol[i]);
+  //     k = MAX(k,dualcol[i]);
+  //   }
+  //   printf("range dualcol: %d %d\n",j,k);
+  // #endif
 
   if (info)
   {
@@ -12066,8 +12063,9 @@ omstart:
 
   /* Inverse topology is created for partitioning only and then the direct
      topology is needed elsewhere as well. Do do not destroy it. */
-  if (0)
-    DestroyInverseTopology(data, info);
+  // if (0)
+  // DestroyInverseTopology(data, info);
+  // DestroyInverseTopology(data);
 
   return (0);
 }
@@ -12091,12 +12089,14 @@ int DestroyCRSMatrix(struct CRSType *sp)
   return (0);
 }
 
-int DestroyInverseTopology(struct FemType *data, int info)
+// int DestroyInverseTopology(struct FemType *data, int info)
+int DestroyInverseTopology(struct FemType *data)
 {
   return DestroyCRSMatrix(&data->invtopo);
 }
 
-int DestroyDualGraph(struct FemType *data, int info)
+// int DestroyDualGraph(struct FemType *data, int info)
+int DestroyDualGraph(struct FemType *data)
 {
   return DestroyCRSMatrix(&data->dualgraph);
 }

@@ -5,7 +5,9 @@
 #include "common.h"
 #include <stdio.h>
 // #include <unistd.h>
+#ifdef _WIN32
 #include <direct.h>
+#endif
 #include <math.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -19,10 +21,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "femtypes.h"
 #include "femdef.h"
 #include "femelmer.h"
 #include "femknot.h"
+#include "femtypes.h"
 #include "nrutil.h"
 
 // #include "../config.h"
@@ -577,7 +579,8 @@ static int FindParentSide(struct FemType *data, struct BoundaryType *bound,
     return (1);
 }
 
-static int Getnamerow(char *line, FILE *io, int upper)
+// static int Getnamerow(char *line, FILE *io, int upper)
+static int Getnamerow(char *line, FILE *io)
 {
   // int i,isend;
   int isend;
@@ -1022,7 +1025,8 @@ int LoadElmerInput(struct FemType *data, struct BoundaryType *bound,
 
     for (;;)
     {
-      if (Getnamerow(line, in, FALSE))
+      // if (Getnamerow(line, in, FALSE))
+      if (Getnamerow(line, in))
         goto namesend;
 
       if (strstr(line, "names for boundaries"))
@@ -2406,7 +2410,8 @@ int PartitionSimpleElements(struct FemType *data, struct ElmergridType *eg,
     PartitionConnectedElementsStraight(data, bound, eg, info);
 
   if (data->nodeconnectexist)
-    ExtendBoundaryPartitioning(data, bound, eg->partbclayers, info);
+    // ExtendBoundaryPartitioning(data, bound, eg->partbclayers, info);
+    ExtendBoundaryPartitioning(data, eg->partbclayers, info);
 
   if (!data->partitionexist)
   {
@@ -3871,8 +3876,9 @@ int PartitionConnectedElementsMetis(struct FemType *data,
 }
 #endif
 
-int ExtendBoundaryPartitioning(struct FemType *data, struct BoundaryType *bound,
-                               int elemlayers, int info)
+int ExtendBoundaryPartitioning(
+    struct FemType *data, // struct BoundaryType *bound,
+    int elemlayers, int info)
 {
   int i, j, k, l, m, n, nonodes, noknots, noelements, totpartelems, nparts, set;
   int minpartelems, maxpartelems, refcount, refpart, part;
@@ -4655,7 +4661,9 @@ int PartitionMetisGraph(struct FemType *data, struct BoundaryType *bound,
 
     if (data->nodeconnectexist)
     {
-      errstat = ExtendBoundaryPartitioning(data, bound, eg->partbclayers, info);
+      // errstat = ExtendBoundaryPartitioning(data, bound, eg->partbclayers,
+      // info);
+      errstat = ExtendBoundaryPartitioning(data, eg->partbclayers, info);
       if (errstat)
         bigerror("Extend boundary partitioning returned error!");
     }
@@ -4796,7 +4804,8 @@ int PartitionMetisGraph(struct FemType *data, struct BoundaryType *bound,
     if (eg->connect)
     {
       int maxweight;
-      int con, bc, bctype, sideelemtype, sidenodes;
+      // int con, bc, bctype, sideelemtype, sidenodes;
+      int bc, bctype, sideelemtype, sidenodes;
       int j2, ind, ind2;
       int sideind[MAXNODESD1];
 
@@ -4936,7 +4945,8 @@ skippart:
     /* Finally check that the constraint is really honored */
     if (!eg->connect)
     {
-      int con, bc, bctype, sideelemtype, sidenodes, par;
+      // int con, bc, bctype, sideelemtype, sidenodes, par;
+      int bc, bctype, sideelemtype, sidenodes, par;
       int ind, sideind[MAXNODESD1];
       int *sidehits, sidepartitions;
 
@@ -5605,12 +5615,11 @@ static void RenumberPartitions(struct FemType *data, int info)
   bw_reduced = RenumberCuthillMckee(partitions, xadj, adjncy, perm);
 
   /* Print the new order of partitions */
-  if (0 && info)
-  {
-    printf("Partition order after Cuthill-McKee bandwidth optimization: \n");
-    for (i = 0; i < partitions; i++)
-      printf("old=%d new=%d\n", i, perm[i]);
-  }
+  // if (0 && info) {
+  //   printf("Partition order after Cuthill-McKee bandwidth optimization: \n");
+  //   for (i = 0; i < partitions; i++)
+  //     printf("old=%d new=%d\n", i, perm[i]);
+  // }
 
   /* Use the renumbering or not */
   if (bw_reduced)
@@ -5675,7 +5684,7 @@ static int CheckSharedDeviation(int *neededvector, int partitions, int info)
   return (dshared);
 }
 
-int OptimizePartitioning(struct FemType *data, struct BoundaryType *bound,
+int OptimizePartitioning(struct FemType *data, // struct BoundaryType *bound,
                          int noopt, int partbw, int info)
 /* Optimize partitioning of elements so that each partition has as closely as
    possible the desired amount of elements. Also, ir requested, check that there
@@ -7030,7 +7039,8 @@ next_shared_set:
 
     if (indirect)
     {
-      int maxsides, nodesides, maxnodeconnections, connectednodes, m;
+      // int maxsides, nodesides, maxnodeconnections, connectednodes, m;
+      int maxsides, nodesides, maxnodeconnections, connectednodes;
       int **nodepairs = NULL, *nodeconnections, **indpairs;
 
       nodeconnections = bcnodedummy;
