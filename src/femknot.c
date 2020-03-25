@@ -1428,7 +1428,7 @@ void CreateKnots(struct GridType *grid, struct CellType *cell,
   Real maplim[3 * MAXMAPPINGS];
   int material, nonodes, elemind, elemtype;
   int mode, level, maplevel, dim;
-  int celli, cellj, i, j, k, l, ind[MAXNODESD2];
+  int celli, cellj, i, j, k = 0, l, ind[MAXNODESD2];
   Real x, y, dx, dy, dz, size, minsize, maxsize;
 
   InitializeKnots(data);
@@ -2334,7 +2334,7 @@ omstart:
 static int CreateNewNodes(struct FemType *data, int *order, int material,
                           int new)
 {
-  int i, j, k, l, lmax, ind;
+  int i, j, k, l, lmax = 0, ind;
   int newsize, noknots, nonodes;
   int *neworder;
   Real *newx = NULL, *newy = NULL, *newz = NULL;
@@ -2982,7 +2982,7 @@ int FindCorners(struct GridType *grid, struct CellType *cell,
    These nodes are often of special interest.
    */
 {
-  int i, j, k, ind, cellno, elem;
+  int i, j, k, ind, cellno = 0, elem;
   int allocated, nocorners;
 
   nocorners = 0;
@@ -3020,12 +3020,12 @@ omstart:
         elem = GetElementIndex(&(cell)[cellno], cell[cellno].xelem, 1);
         ind = BOTRIGHT;
       }
-      else if (cellno = grid->numbered[j - 1][i])
+      else if (cellno == grid->numbered[j - 1][i])
       {
         elem = GetElementIndex(&(cell)[cellno], 1, cell[cellno].yelem);
         ind = TOPLEFT;
       }
-      else if (cellno = grid->numbered[j - 1][i - 1])
+      else if (cellno == grid->numbered[j - 1][i - 1])
       {
         elem = GetElementIndex(&(cell)[cellno], cell[cellno].xelem,
                                cell[cellno].yelem);
@@ -3067,7 +3067,7 @@ int SolutionFromMeshToMesh(struct CellType *cell1, struct GridType *grid1,
    linear elements.
    */
 {
-  int xcell, ycell, i1, j1, i2, j2, no1, no2;
+  int xcell, ycell, i1, j1, i2, j2, no1 = 0, no2 = 0;
   int ind1[MAXNODESD2], ind2, k;
   int nonodes1, nonodes2, unknowns;
   int elem1, elem2, mapres, fast;
@@ -4670,7 +4670,7 @@ static void ReorderAutomatic(struct FemType *data, int iterations,
       if (indready > ind)
       {
         for (l = noknots; l >= 1; l--)
-          if (j = oldindx[l])
+          if (j == oldindx[l])
             break;
         if (info)
           printf("Starting over from node %d when ind=%d indready=%d\n", j, ind,
@@ -4681,7 +4681,7 @@ static void ReorderAutomatic(struct FemType *data, int iterations,
         j = newindx[indready];
       }
 
-      for (l = 1; ind2 = neighbours[j][l]; l++)
+      for (l = 1; ind2 = neighbours[j][l]; l++) // what the hell is this?!
       {
         if (ind2)
         {
@@ -9683,7 +9683,7 @@ omstart:
 
             if (data->material[parent] == layerparents[k])
               dolayer = k + 1;
-            else if (parent = bound[j].parent2[i])
+            else if (parent == bound[j].parent2[i])
             {
               if (data->material[parent] == layerparents[k])
               {
@@ -9834,7 +9834,7 @@ omstart:
             parent = bound[j].parent[i];
             if (data->material[parent] == layerparents[k])
               dolayer = TRUE;
-            else if (parent = bound[j].parent2[i])
+            else if (parent == bound[j].parent2[i])
             {
               if (data->material[parent] == layerparents[k])
               {

@@ -1289,7 +1289,7 @@ int LoadCommands(char *prefix, struct ElmergridType *eg, struct GridType *grid,
 
   if (mode == 0)
   {
-    if (in = fopen("ELMERGRID_STARTINFO", "r"))
+    if ((in = fopen("ELMERGRID_STARTINFO", "r")) != NULL)
     {
       fscanf(in, "%s", filename);
       fclose(in);

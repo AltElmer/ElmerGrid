@@ -376,7 +376,7 @@ int LoadAbaqusInput(struct FemType *data, struct BoundaryType *bound,
   // int boundarytype,boundarynodes,elsetactive,elmatactive,cont;
   int boundarytype, boundarynodes, elsetactive, elmatactive;
   int *nodeindx = NULL, *boundindx = NULL, *materials = NULL, *elemindx = NULL;
-  char *pstr;
+  char *pstr = NULL;
   char filename[MAXFILESIZE];
   char line[MAXLINESIZE];
   int i, j, k, *ind = NULL;
@@ -2043,7 +2043,7 @@ int LoadAnsysInput(struct FemType *data, struct BoundaryType *bound,
 {
   int noknots = 0, noelements = 0, nosides, sidetype, currenttype;
   int maxindx, *indx, *revindx, topology[100], ind;
-  int i, j, k, l, imax, *nodeindx, *boundindx, boundarynodes = 0;
+  int i = 0, j, k, l, imax, *nodeindx, *boundindx, boundarynodes = 0;
   int noansystypes, *ansysdim, *ansysnodes, *ansystypes, boundarytypes = 0;
   int namesexist, maxside, sides;
   Real x, y, z;

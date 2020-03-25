@@ -1007,7 +1007,7 @@ int LoadElmerInput(struct FemType *data, struct BoundaryType *bound,
   }
 
   sprintf(filename, "%s", "mesh.names");
-  if (in = fopen(filename, "r"))
+  if ((in = fopen(filename, "r")) != NULL)
   {
     int isbody, started, nameproblem;
 
@@ -1386,7 +1386,7 @@ int SaveElmerInput(struct FemType *data, struct BoundaryType *bound,
       printf("Reusing an existing directory\n");
     if (nooverwrite)
     {
-      if (out = fopen("mesh.header", "r"))
+      if ((out = fopen("mesh.header", "r")) == NULL)
       {
         printf("Mesh seems to already exist, writing is cancelled!\n");
         return (1);

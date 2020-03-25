@@ -1022,7 +1022,7 @@ redoelements:
 
   if (eg.sidemappings)
   {
-    int currenttype;
+    int currenttype = 0;
 
     for (l = 0; l < eg.sidemappings; l++)
       printf("Setting boundary types between %d and %d to %d\n",
