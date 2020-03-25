@@ -192,7 +192,7 @@ int FuseSolutionElmerPartitioned(char *prefix, char *outfile, int decimals,
   FILE *in[MAXPARTITIONS + 1], *intest, *out;
   char line[LONGLINE], filename[MAXFILESIZE], text[MAXNAMESIZE],
       outstyle[MAXFILESIZE];
-  char *cp, *charend;
+  char *cp = NULL, *charend = NULL;
 
   if (minstep || maxstep || dstep)
   {
@@ -584,7 +584,7 @@ static int Getnamerow(char *line, FILE *io)
 {
   // int i,isend;
   int isend;
-  char *charend;
+  char *charend = NULL;
 
   charend = fgets(line, MAXLINESIZE, io);
   isend = (charend == NULL);
@@ -602,7 +602,7 @@ int LoadElmerInput(struct FemType *data, struct BoundaryType *bound,
 {
   int noknots, noelements, nosides, maxelemtype, maxnodes, nonodes;
   int sideind[MAXNODESD1], tottypes, elementtype;
-  int i, j, k, l, dummyint, cdstat, fail;
+  int i, j, k, l, dummyint, cdstat = 0, fail;
   int falseparents, noparents, bctopocreated;
   int activeperm, activeelemperm, mini, maxi, minelem, maxelem, p1, p2;
   int *nodeperm, *elemperm, *invperm, *invelemperm;
@@ -1324,7 +1324,7 @@ int SaveElmerInput(struct FemType *data, struct BoundaryType *bound,
    */
 #define MAXELEMENTTYPE 827
 {
-  int noknots, noelements, material, sumsides, elemtype, fail, cdstat;
+  int noknots, noelements, material, sumsides, elemtype, fail, cdstat = 0;
   // int sideelemtype,conelemtype,nodesd1,nodesd2,newtype;
   int sideelemtype, nodesd1, nodesd2, newtype;
   // int i,j,k,l,bulktypes[MAXELEMENTTYPE+1],sidetypes[MAXELEMENTTYPE+1];
@@ -1653,7 +1653,7 @@ int SaveElmerInputFemBem(struct FemType *data, struct BoundaryType *bound,
 {
   int noknots, noelements, material, sumsides, elemtype, fail, nobulkelements,
       bctype;
-  int sideelemtype, nodesd1, nodesd2, newtype, elemdim, maxelemdim, cdstat;
+  int sideelemtype, nodesd1, nodesd2, newtype, elemdim, maxelemdim, cdstat = 0;
   int i, j, k, l, bulktypes[MAXELEMENTTYPE + 1], sidetypes[MAXELEMENTTYPE + 1],
       tottypes;
   int ind[MAXNODESD1], bodyperm[MAXBODIES], bcperm[MAXBCS];
@@ -6089,7 +6089,7 @@ int SaveElmerInputPartitioned(struct FemType *data, struct BoundaryType *bound,
       halomode;
   // int
   // halobulkelems,halobcs,savethis,fail=0,cdstat,immersed,halocopies,anyparthalo;
-  int halobulkelems, halobcs, fail = 0, cdstat, immersed, halocopies,
+  int halobulkelems, halobcs, fail = 0, cdstat = 0, immersed, halocopies,
                               anyparthalo;
 
   FILE *out, *outfiles[MAXPARTITIONS + 1];

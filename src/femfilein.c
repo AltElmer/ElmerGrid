@@ -44,8 +44,8 @@
 #include "femtypes.h"
 #include "nrutil.h"
 
-#define GETLINE getlineptr = fgets(line, MAXLINESIZE, in)
-#define GETLONGLINE getlineptr = fgets(longline, LONGLINESIZE, in)
+#define GETLINE (getlineptr = fgets(line, MAXLINESIZE, in))
+#define GETLONGLINE (getlineptr = fgets(longline, LONGLINESIZE, in))
 
 static int linenumber;
 static char *getlineptr;

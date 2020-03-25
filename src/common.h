@@ -22,7 +22,8 @@
 #include <stddef.h>
 
 
-#ifdef _WIN32
+// #ifdef _WIN32
+#ifdef _MSC_VER && !__INTEL_COMPILER
 // #define _CRT_SECURE_NO_DEPRECATE
 #pragma warning (disable : 4996)
 #pragma warning (disable : 4668)

@@ -26,7 +26,7 @@ if (CMAKE_C_COMPILER_ID MATCHES "Clang")
 elseif (CMAKE_C_COMPILER_ID STREQUAL "Clang")
   # using Clang
 elseif (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-  set(CMAKE_C_FLAGS "-Wall -Wextra")
+  set(CMAKE_C_FLAGS "-Wall -Wextra -Wno-comment")
   set(CMAKE_C_FLAGS_DEBUG "-g")
   set(CMAKE_C_FLAGS_RELEASE "-O3")
 elseif (CMAKE_C_COMPILER_ID STREQUAL "Intel")
