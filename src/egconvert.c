@@ -5280,9 +5280,9 @@ int LoadGmshInput(struct FemType *data,struct BoundaryType *bound,
   }
 
   if(strstr(line,"$")) {
-    int verno,minorno;
+    int verno,minorno,gmshformat;
     char *cp;
-    
+
     Getrow(line,in,FALSE);
     cp = line;    
     verno = next_int(&cp);
@@ -5290,7 +5290,14 @@ int LoadGmshInput(struct FemType *data,struct BoundaryType *bound,
     minorno = next_int(&cp);
 
     if(info) printf("Gmsh version is %d.%d\n",verno,minorno);
-    
+
+    cp++;
+    gmshformat = next_int(&cp);
+    if(gmshformat == 1){
+      printf("Error: Gmsh input file is in binary format! Exiting.\n");
+      bigerror("Gmsh input file is in binary format!");
+    }
+
     fclose(in);
     
     if( verno == 4 ) {
