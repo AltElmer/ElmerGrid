@@ -784,6 +784,9 @@ int main(int argc, char *argv[])
   if(info) for(k=0;k<nomeshes;k++)
     BoundingBox(&data[k],k,nomeshes,info);
 
+  if(info) for(k=0;k<nomeshes;k++)
+    MeshPieces(&data[k],k,nomeshes,info);
+
   if(eg.nosave) {
     Goodbye();
     return(0);
