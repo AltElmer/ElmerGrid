@@ -892,11 +892,9 @@ int MeshPieces(struct FemType *data,int nomesh,int nomeshes,int info)
   }
 /*  printf("Mesh coloring loops: %d\n",Loop); */
 
-/*
   MaxIndex = 0;
   for(i=1; i<=n; i++)
     if(MeshPiece[i] > MaxIndex) MaxIndex = MeshPiece[i];
-*/
 
   /*  Compute the true number of different pieces  */
   if(MaxIndex == 1) {
