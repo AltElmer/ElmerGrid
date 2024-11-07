@@ -835,12 +835,9 @@ int MeshPieces(struct FemType *data,int nomesh,int nomeshes,int info)
   }
 
   n = data->noknots;
-  MeshPiece = calloc(n+1, sizeof(int) );
-  if(MeshPiece == NULL) {
-    printf("Allocating space for MeshPiece[] failed.\n");
-    return(1);
-  }
-
+  MeshPiece = Ivector(1,n);
+  for(i=1;i<=n;i++) MeshPiece[i] = 0;
+  
   /*  Only set the piece for the nodes that are used by some element
       For others the marker will remain zero. */
   for(i=1; i<=data->noelements; i++) {
@@ -865,11 +862,11 @@ int MeshPieces(struct FemType *data,int nomesh,int nomeshes,int info)
   /* We go through the elements and set all the piece indexes to minimum index
      until the mesh is unchanged. Thereafter the whole piece will have the minimum index
      of the piece.  */
-  Ready = 0;
+  Ready = FALSE;
   Loop = 0;
 
   while(!Ready) {
-    Ready = 1;
+    Ready = TRUE;
     for(i=1; i<=data->noelements; i++) {
       MaxIndex = 0;
       MinIndex = n;
@@ -887,7 +884,7 @@ int MeshPieces(struct FemType *data,int nomesh,int nomeshes,int info)
         }
         if(MaxIndex > MinIndex) {
           MeshPiece[Indexes[j]] = MinIndex;
-          Ready = 0;
+          Ready = FALSE;
         }
       }
     }
@@ -906,11 +903,10 @@ int MeshPieces(struct FemType *data,int nomesh,int nomeshes,int info)
     NoPieces = 1;
   } else {
     NoPieces = 0;
-    PiecePerm = calloc(MaxIndex+1, sizeof(int) );
-    if(PiecePerm == NULL) {
-      printf("Allocating space for PiecePerm[] failed.\n");
-      return(1);
-    }
+    PiecePerm = Ivector(1,MaxIndex);
+    for(i=1;i<=MaxIndex;i++) 
+      PiecePerm[i] = 0;    
+      
     for(i=1; i<=n; i++) {
       j = MeshPiece[i];
       if( j == 0) continue;
@@ -919,16 +915,16 @@ int MeshPieces(struct FemType *data,int nomesh,int nomeshes,int info)
         PiecePerm[j] = NoPieces;
       }
     }
-    free(PiecePerm);
+    free_Ivector(PiecePerm,1,MaxIndex);
   }
   if(NoPieces == 1) {
     printf("There is a single piece in the mesh, so the mesh is conforming.\n");
   } else {
     printf("Number of separate pieces in mesh is %d\n", NoPieces);
-    printf("The mesh is non-conforming.  If not expecting a non-conforming\n");
+    printf("The mesh is non-conforming. If not expecting a non-conforming\n");
     printf("mesh, then refer to the Elmer User Forum for help.\n");
   }
-  free(MeshPiece);
+  free_Ivector(MeshPiece,1,n);
   return(0);
 }
 
