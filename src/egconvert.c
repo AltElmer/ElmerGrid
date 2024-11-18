@@ -593,7 +593,7 @@ omstart:
 	mode = 1;
       }
       else if(strstr(line,"*NODE")) {
-	if(pstr = strstr(line,"NODE OUTPUT")) {
+	if( ( pstr = strstr(line,"NODE OUTPUT")) ) {
 	  mode = 10;
 	}
 	else  {	  
@@ -604,7 +604,7 @@ omstart:
 	}
       }
       else if(strstr(line,"*ELEMENT")) {
-	if(pstr = strstr(line,"ELEMENT OUTPUT")) {
+	if( ( pstr = strstr(line,"ELEMENT OUTPUT")) ) {
 	  mode = 10;
 	}
 	else {
@@ -645,7 +645,7 @@ omstart:
 			    elemcode,noelements,bodyid);
 	  }
 	  
-	  if(pstr = strstr(line,"ELSET=")) {
+	  if( ( pstr = strstr(line,"ELSET=")) ) {
 	    bodyid++;	    	      
 	    if(allocated) {
 	      if(info) printf("Loading elements to body %d from ELSET %s",bodyid,pstr+6);
@@ -678,7 +678,7 @@ omstart:
 	mode = 4;
 	if(allocated && info) printf("Treating keyword CLOAD for bc %d\n",boundarytype);
       }
-      else if(pstr = strstr(line,"NSET=")) {
+      else if( (pstr = strstr(line,"NSET=")) ) {
 	
 	if( strstr(line,"ELSET=") ) {
 	  /* Skipping association of ELSET to NSET */
@@ -690,7 +690,7 @@ omstart:
 	   if(allocated && info) printf("Treating keyword NSET for bc %d from: %s",boundarytype,pstr+5);
 	 }
       }
-      else if(pstr = strstr(line,"ELSET=")) {
+      else if( (pstr = strstr(line,"ELSET=")) ) {
 	mode = 6;
 
 	generate = FALSE;
@@ -702,17 +702,17 @@ omstart:
 	  pstr += 1;
 
 	  /* This numbering is true for Abaqus-to-Elmer hexas only! */
-	  if( pstr2 = strstr(pstr,"_S1") )
+	  if( ( pstr2 = strstr(pstr,"_S1") ) )
 	    side = 1; 
-	  else if( pstr2 = strstr(pstr,"_S2") )
+	  else if( ( pstr2 = strstr(pstr,"_S2") ) ) 
 	    side = 2; 
-	  else if( pstr2 = strstr(pstr,"_S3") )
+	  else if( ( pstr2 = strstr(pstr,"_S3") ) )
 	    side = 3;  
-	  else if( pstr2 = strstr(pstr,"_S4") )
+	  else if( ( pstr2 = strstr(pstr,"_S4") ) )
 	    side = 4; 
-	  else if( pstr2 = strstr(pstr,"_S5") )
+	  else if( ( pstr2 = strstr(pstr,"_S5") ) )
 	    side = 5; 
-	  else if( pstr2 = strstr(pstr,"_S6") )
+	  else if( ( pstr2 = strstr(pstr,"_S6") ) )
 	    side = 6; 
 	    
 	  if(!side ) printf("Could not determine side!\n"); 
@@ -747,12 +747,12 @@ omstart:
 	}
 	
       }
-      else if(pstr = strstr(line,"SURFACE")) {
+      else if( ( pstr = strstr(line,"SURFACE")) ) {
 	bcind = bcind + newsurface;
 	newsurface = FALSE;
 	mode = 0;
       }
-      else if(pstr = strstr(line,"PART, NAME=")) {
+      else if( ( pstr = strstr(line,"PART, NAME=")) ) {
 	bodyid += 1;
 	mode = 6;
 	generate = FALSE;
@@ -766,7 +766,7 @@ omstart:
 	  data->boundarynamesexist = TRUE;
 	}
       }
-      else if(pstr = strstr(line,"HWCOLOR")) {
+      else if( ( pstr = strstr(line,"HWCOLOR")) ) {
 	/* unused command */
 	mode = 0;
       }
@@ -1087,7 +1087,7 @@ omstart:
     /* The underscore suggest some special Abaqus commands. Scrap that. */
     for(i=1;i<=maxid;i++) {
       if(data->bodyname[i]) 
-	if( pstr = strstr(data->bodyname[i],",") ) pstr[0] = '\0';
+	if( ( pstr = strstr(data->bodyname[i],",") ) ) pstr[0] = '\0';
     }
   }
     
