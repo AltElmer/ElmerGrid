@@ -121,9 +121,9 @@ int FuseSolutionElmerPartitioned(char *prefix,char *outfile,int decimals,int par
   }
   totknots = sumknots;
   totelements = sumelements;
-  res = Rvector(1,novctrs);
+  if(novctrs) res = Rvector(1,novctrs);
 
-  if(info) printf("There are altogether %d nodes and %d elements.\n",totknots,sumelements);
+  if(info) printf("There are %d nodes, %d elements and %d vectors.\n",totknots,sumelements,novctrs);
 
 
   AddExtension(outfile,filename,"ep");
