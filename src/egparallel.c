@@ -192,6 +192,8 @@ int FuseSolutionElmerPartitioned(char *prefix,char *outfile,int decimals,int par
   }
 
   if(info) printf("Reading and writing %d degrees of freedom.\n",novctrs);
+  if(!novctrs) goto skip;
+  
   sprintf(outstyle,"%%.%dg ",decimals);
 
   activestep = FALSE;
@@ -233,6 +235,7 @@ int FuseSolutionElmerPartitioned(char *prefix,char *outfile,int decimals,int par
   }
 
 
+ skip:
   for(i=0;i<nofiles;i++) 
     fclose(in[i]);
   fclose(out);
