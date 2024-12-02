@@ -5275,48 +5275,60 @@ int LoadGmshInput(struct FemType *data,struct BoundaryType *bound,
 
   Getrow(line,in,FALSE);
 
-  if(info) {
-    printf("Format chosen using the first line: %s",line);
-  }
+  if(info) printf("Format chosen using the first line: %s",line);
 
-  if(strstr(line,"$")) {
-    int verno,minorno,gmshformat;
-    char *cp;
+  if(strstr(line,"$MeshFormat")) {
+    // gmsh uses floating point for the version number, so let's also use floating point.
+    // using the gmsh method with a double, actually works better and
+    // is able to detect types 1 and 3 formats.
+    double gmshversion;
+    int gmshbinary,gmshsize;
 
     Getrow(line,in,FALSE);
-    cp = line;    
-    verno = next_int(&cp);
-    cp++;
-    minorno = next_int(&cp);
-
-    if(info) printf("Gmsh version is %d.%d\n",verno,minorno);
-
-    cp++;
-    gmshformat = next_int(&cp);
-    if(gmshformat == 1){
-      printf("Error: Gmsh input file is in binary format! Exiting.\n");
-      bigerror("Gmsh input file is in binary format!");
-    }
-
     fclose(in);
-    
-    if( verno == 4 ) {
-      if( minorno == 0 ) 
-	errnum = LoadGmshInput4(data,bound,filename,usetaggeom,keeporphans,info);
-      else if( minorno == 1 ) 
-	errnum = LoadGmshInput41(data,bound,filename,usetaggeom,keeporphans,info);
-      else
-	printf("Minor version not yet supported, cannot continue!\n");
+
+    if(sscanf(line, "%lf %d %d", &gmshversion, &gmshbinary, &gmshsize) != 3) {
+      printf("Gmsh input line: %s, expected but didn't receive three items on line. Exiting!\n",line);
+      printf("Input line: %s\n",line);
+      bigerror("Gmsh input line didn't receive the expected three items!");
     }
-    else {
-      errnum = LoadGmshInput2(data,bound,filename,usetaggeom,keeporphans,info);
-    }      
+
+    // gmshversion is a float, hence the ugly decimal points to insure proper comparisons
+    if(gmshversion < 2.99) {
+      if(gmshbinary) {
+        printf("Gmsh input file format is type %5.1f, binary is not supported.\n",gmshversion);
+        printf("Please use Gmsh 2 or 4 ASCII versions for output from Gmsh\n");
+        bigerror("Gmsh input file in binary is not supported!");
+      } else {
+        printf("Gmsh input file format is type %5.1f in ASCII.\n",gmshversion);
+        errnum = LoadGmshInput2(data,bound,filename,usetaggeom,keeporphans,info);
+      }
+    } else if(gmshversion < 3.99) {
+      printf("Gmsh input file of format type %5.1f, is not supported. Exiting!\n",gmshversion);
+      printf("Please use Gmsh 2 or 4 ASCII versions for output from Gmsh\n");
+      bigerror("Gmsh input file format is not supported!");
+    } else if(gmshversion < 4.09) {
+      printf("Gmsh input file format is type %5.1f in ASCII.\n",gmshversion);
+      errnum = LoadGmshInput4(data,bound,filename,usetaggeom,keeporphans,info);
+    } else if(gmshversion < 5.0) {
+      if(gmshbinary) {
+        printf("Gmsh input file format is type %5.1f, binary is not supported.\n",gmshversion);
+        printf("Please use Gmsh 2 or 4 ASCII versions for output from Gmsh\n");
+        bigerror("Gmsh input file in binary is not supported!");
+      } else {
+        printf("Gmsh input file format is type %5.1f in ASCII.\n",gmshversion);
+        errnum = LoadGmshInput41(data,bound,filename,usetaggeom,keeporphans,info);
+      }
+    } else {
+      printf("Gmsh input file of format type %5.1f, is not supported. Exiting!\n",gmshversion);
+      printf("Please use Gmsh 2 or 4 ASCII versions for output from Gmsh\n");
+      bigerror("Gmsh input file format is not supported!");
+    }
   } else {
-    fclose(in);
     printf("*****************************************************\n");
-    printf("The first line did not start with $, assuming Gmsh 1 format\n");
+    printf("The first line did not start with $MeshFormat, assuming Gmsh 1 format\n");
     printf("This version of Gmsh format is no longer supported\n");
-    printf("Please use Gmsh 2 or 4 versions for output\n");
+    printf("Please use Gmsh 2 or 4 ASCII versions for output from Gmsh\n");
     printf("*****************************************************\n");
     
     errnum = LoadGmshInput1(data,bound,filename,info);
