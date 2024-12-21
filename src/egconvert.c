@@ -4990,9 +4990,11 @@ omstart:
 
               int noboundint = (int) nobound;
               if(noboundint > 0) {
-                frcount = fread(&idum, sizeof(int), noboundint, in);
-                if(frcount != noboundint)
-                  printf("14 fread error, frcount = %d, not equal to %d\n",frcount,noboundint);
+                for( k= 0; k < noboundint; k++) {
+                  frcount = fread(&idum, sizeof(int), 1, in);
+                  if(frcount != 1)
+                    printf("14 fread error, frcount = %d, not equal to %d\n",frcount,1);
+                }
               }
             }
             // Read the first physical tag if there are any
