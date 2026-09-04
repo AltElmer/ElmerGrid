@@ -104,17 +104,21 @@ jobs:
             [ -d "$d" ] && ls "$d"/libmetis* 2>/dev/null || true
           done
 
+          # -path '*/debug/*' -prune matters: vcpkg installs a debug tree
+          # beside the release one, and an unfiltered find picked the debug
+          # libmetis.a, which is not what a release should ship.
           find_pair() {
-            lib=$(find "$1" -name 'libmetis.a' 2>/dev/null | head -1)
-            inc=$(find "$2" -name 'metis.h' 2>/dev/null | head -1)
+            lib=$(find "$1" -path '*/debug/*' -prune -o -name 'libmetis.a' -print 2>/dev/null | head -1)
+            inc=$(find "$2" -path '*/debug/*' -prune -o -name 'metis.h' -print 2>/dev/null | head -1)
             [ -n "$lib" ] && [ -n "$inc" ]
           }
 
+          root=""
           if find_pair /usr /usr; then
-            :
+            root=/usr
           elif find_pair "$(brew --prefix metis 2>/dev/null || echo /nonexistent)" \
                          "$(brew --prefix metis 2>/dev/null || echo /nonexistent)"; then
-            :
+            root=$(brew --prefix metis)
           else
             echo "--- no static Metis from the system; building one with vcpkg ---"
             vcpkg="${VCPKG_INSTALLATION_ROOT:-/usr/local/share/vcpkg}"
@@ -122,14 +126,23 @@ jobs:
             "$vcpkg/vcpkg" install metis
             find_pair "$vcpkg/installed" "$vcpkg/installed" || {
               echo "::error::vcpkg reported success but produced no libmetis.a and metis.h"
-              find "$vcpkg/installed" -name 'libmetis*' -o -name 'metis.h' | head -20
+              find "$vcpkg/installed" \( -name 'libmetis*' -o -name 'metis.h' \) | head -20
               exit 1
             }
+            root="$vcpkg/installed"
           fi
 
-          echo "METIS_A=$lib" >> "$GITHUB_ENV"
+          # vcpkg builds METIS against a separate GKlib, so libmetis.a alone
+          # leaves gk_malloc, gk_free and gk_CPUSeconds undefined. Debian's
+          # metis has GKlib folded in and ships no such library, hence the
+          # conditional rather than an unconditional second entry.
+          gk=$(find "$root" -path '*/debug/*' -prune -o -name 'libGKlib.a' -print 2>/dev/null | head -1)
+          libs="$lib"
+          [ -n "$gk" ] && libs="$lib;$gk"
+
+          echo "METIS_A=$libs" >> "$GITHUB_ENV"
           echo "METIS_H=$(dirname "$inc")" >> "$GITHUB_ENV"
-          echo "static metis: $lib"
+          echo "static metis: $libs"
           echo "metis header: $inc"
 
       - name: find a static Metis (msys2)
