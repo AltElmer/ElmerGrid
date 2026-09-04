@@ -82,13 +82,21 @@ The suite is twelve serial cases plus three controls, and it is described in [te
 
 ## Authors
 
-ElmerGrid was written by **Peter Råback** at CSC – IT Center for Science. Every source file here carries `Author: Peter Raback` and `Copyright (C) 1995- , CSC - IT Center for Science Ltd.`, and 236 of the 352 commits in this repository are his. It has been extended over thirty years by the Elmer developers: Thomas Zwinger, Juhani Kataja, Eelis Takala, Rich Bayless, Markus Mützel, Pavel Ponomarev, Juha Ruokolainen, Sami Ilvonen, Ladislav Michl, Juris Vencels, Mika Malinen and others all appear in `git log`, which is the real record and is complete.
+ElmerGrid was written by **Peter Råback** at CSC – IT Center for Science. Every source file here carries `Author: Peter Raback` and `Copyright (C) 1995- , CSC - IT Center for Science Ltd.`, and roughly 500 of the 678 commits in this repository are his, under five different spellings of his name across two version control systems. The first commit here, in June 2005, is by **Ville Vierinen**. It has been extended since by the Elmer developers: Thomas Zwinger, Juhani Kataja, Eelis Takala, Rich Bayless, Markus Mützel, Pavel Ponomarev, Juha Ruokolainen, Sami Ilvonen, Ladislav Michl, Juris Vencels, Mika Malinen and others all appear in `git log`, which is the real record and is now complete back to 2005.
 
 The bundled `src/metis-5.1.0` is [METIS](https://github.com/KarypisLab/METIS), copyright 1995–2013 Regents of the University of Minnesota, under the Apache License 2.0.
 
 ## History
 
 Every commit in this repository is an upstream Elmer commit, with its original author, date and message, filtered down to the files that were ever part of ElmerGrid. Nothing was squashed, rewritten or reauthored. The extraction was verified by tree hash: at the point it was taken, `0407aaf1417a2e0ff074ab758044a44e4bb47608` was both this tree and `ElmerCSC/elmerfem@devel:elmergrid`. Everything after that commit is this repository's own — the tests, the CI, and the removal of the bundled METIS.
+
+### Before GitHub
+
+`ElmerCSC/elmerfem` begins in February 2014. ElmerGrid does not. Elmer was developed in Subversion on SourceForge from 2005, and that repository is still there, so **314 commits from 2005-06-06 to 2014-01-14 have been recovered** from `svn.code.sf.net/p/elmerfem/code/trunk/elmergrid` and joined to the front of this history. `git log` here runs from ElmerGrid's first commit to today: 678 commits, 34 contributors, twenty years.
+
+The join is not a guess. The last Subversion commit before the GitHub era and the first GitHub commit have **the same tree**, `35f77affd747be81e89eebf69872092c6e6d94e4` — the import began exactly where Subversion left off, byte for byte, so the two histories meet at a provable seam rather than a plausible one. The graft was made permanent with `git filter-repo`, and the tree at `main` is unchanged by it.
+
+The same recovery was done for [matc](https://github.com/AltElmer/matc), [eio](https://github.com/AltElmer/eio), [elmerfront](https://github.com/AltElmer/elmerfront) and [ElmerPost](https://github.com/AltElmer/ElmerPost). The pre-graft history is kept at `archive/github-only-history`.
 
 An earlier `master` branch in this repository, from March 2020, was a copy of the sources with no history at all. It is kept as `archive/2020-metisectomy` rather than deleted, since deleting somebody's earlier work is not an improvement, but it should not be used.
 
