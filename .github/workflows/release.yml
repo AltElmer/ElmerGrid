@@ -94,7 +94,8 @@ jobs:
           cmake --build build
           ctest --test-dir build --output-on-failure
 
-      - name: the binary must be self-contained
+      - name: the binary must be self-contained (unix)
+        if: '!matrix.msys2'
         shell: bash
         run: |
           set -e
@@ -102,40 +103,64 @@ jobs:
           [ -n "$eg" ] || { echo "::error::ElmerGrid was not built"; exit 1; }
           echo "binary: $eg  ($(wc -c < "$eg") bytes)"
 
-          case "${{ runner.os }}" in
-            Linux)
-              # ldd exits 1 saying "not a dynamic executable" for a static one,
-              # so its output is what is read, not its status.
-              out=$(ldd "$eg" 2>&1 || true)
-              echo "$out"
-              case "$out" in
-                *"not a dynamic executable"*|*"statically linked"*) echo "ok: static" ;;
-                *) echo "::error::the binary is dynamically linked"; exit 1 ;;
-              esac
-              ;;
-            macOS)
-              # A fully static binary is not supported on macOS: there is no
-              # static libSystem. Self-contained here means nothing outside the
-              # OS, which is what a machine without Homebrew provides.
-              out=$(otool -L "$eg")
-              echo "$out"
-              if echo "$out" | tail -n +2 | grep -vqE '/usr/lib/|/System/'; then
-                echo "::error::the binary links something outside the operating system"
-                echo "$out" | tail -n +2 | grep -vE '/usr/lib/|/System/'
-                exit 1
-              fi
-              echo "ok: nothing outside /usr/lib and /System"
-              ;;
-            Windows)
-              out=$(objdump -p "$eg" | grep -i 'DLL Name' || true)
-              echo "$out"
-              if echo "$out" | grep -viE 'KERNEL32|msvcrt|ucrtbase|api-ms-win|ADVAPI32|USER32|SHELL32|ntdll'; then
-                echo "::error::the binary depends on a DLL that is not part of Windows"
-                exit 1
-              fi
-              echo "ok: only system DLLs"
-              ;;
-          esac
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            # ldd exits 1 saying "not a dynamic executable" for a static one,
+            # so its output is what is read, not its status.
+            out=$(ldd "$eg" 2>&1 || true)
+            echo "$out"
+            case "$out" in
+              *"not a dynamic executable"*|*"statically linked"*) echo "ok: static" ;;
+              *) echo "::error::the binary is dynamically linked"; exit 1 ;;
+            esac
+          else
+            # A fully static binary is not supported on macOS: there is no
+            # static libSystem. Self-contained here means nothing outside the
+            # OS, which is what a machine without Homebrew provides.
+            out=$(otool -L "$eg")
+            echo "$out"
+            if echo "$out" | tail -n +2 | grep -vqE '/usr/lib/|/System/'; then
+              echo "::error::the binary links something outside the operating system"
+              echo "$out" | tail -n +2 | grep -vE '/usr/lib/|/System/'
+              exit 1
+            fi
+            echo "ok: nothing outside /usr/lib and /System"
+          fi
+
+      # This runs in the MSYS2 shell rather than the runner's default bash on
+      # purpose. Under `shell: bash` on windows-arm64 the PATH finds an x86-64
+      # objdump from the runner image, which cannot read an aarch64 PE and says
+      # "file format not recognized" -- and an earlier version of this step then
+      # reported that as a DLL dependency, which is a dead instrument being read
+      # as a finding.
+      - name: the binary must be self-contained (windows)
+        if: matrix.msys2
+        shell: msys2 {0}
+        run: |
+          set -e
+          eg=$(find build -name 'ElmerGrid.exe' | head -1)
+          [ -n "$eg" ] || { echo "::error::ElmerGrid was not built"; exit 1; }
+          echo "binary: $eg  ($(wc -c < "$eg") bytes)"
+
+          if ! raw=$(objdump -p "$eg" 2>&1); then
+            echo "$raw"
+            echo "::error::objdump could not read the binary, so this check did not run"
+            exit 1
+          fi
+          out=$(echo "$raw" | grep -i 'DLL Name' || true)
+          echo "$out"
+
+          # Every Windows PE imports at least one system DLL. No import lines at
+          # all means objdump produced nothing useful, not that the binary is
+          # gloriously free of dependencies.
+          if [ -z "$out" ]; then
+            echo "::error::objdump listed no imports at all, so this check did not run"
+            exit 1
+          fi
+          if echo "$out" | grep -viE 'KERNEL32|msvcrt|ucrtbase|api-ms-win|ADVAPI32|USER32|SHELL32|ntdll'; then
+            echo "::error::the binary depends on a DLL that is not part of Windows"
+            exit 1
+          fi
+          echo "ok: only system DLLs"
 
       - name: it must actually mesh something
         shell: bash
