@@ -25,7 +25,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PLATFORM_COUNT: 10
+  PLATFORM_COUNT: 11
 
 jobs:
   build:
@@ -60,6 +60,14 @@ jobs:
             os: ubuntu-24.04
             intel: true
             cmake-extra: -DCMAKE_C_COMPILER=icx -DCMAKE_C_FLAGS=-ffp-contract=off
+          # -ffp-contract=off answered it for arm64 and did not for icx, whose
+          # default -fp-model fast reassociates and substitutes math functions
+          # as well as contracting.  This turns all of that off rather than one
+          # part of it, which is the next question the previous run raised.
+          - target: linux-x86_64-intel-icx-precise
+            os: ubuntu-24.04
+            intel: true
+            cmake-extra: -DCMAKE_C_COMPILER=icx -DCMAKE_C_FLAGS=-fp-model=precise
           - target: macos-arm64-clang
             os: macos-14
             brew: true
