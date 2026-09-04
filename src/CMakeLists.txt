@@ -47,6 +47,18 @@ ENDIF()
 # success without producing the target its callers rely on.
 TARGET_INCLUDE_DIRECTORIES(ElmerGrid SYSTEM PRIVATE ${Metis_INCLUDE_DIR})
 
+# And the library by the path the module resolved, for the same reason: with no
+# imported target, `metis` is a bare name and the linker only searches its
+# default directories, which do not include /opt/homebrew/lib. The target is
+# preferred where it exists, because it carries more than a path -- that is the
+# argument mmuetzel made on ElmerCSC/elmerfem#908 and it was correct there.
+IF(TARGET metis)
+  SET(ELMERGRID_METIS metis)
+ELSE()
+  SET(ELMERGRID_METIS ${Metis_LIBRARIES})
+ENDIF()
+MESSAGE(STATUS "  [ElmerGrid] Metis:                    ${ELMERGRID_METIS}")
+
 # config.h is generated into the elmergrid binary directory and reached as
 # "../config.h" from the sources here, so this directory is what is needed.
 TARGET_INCLUDE_DIRECTORIES(ElmerGrid PRIVATE
@@ -85,7 +97,7 @@ ELSE()
   TARGET_COMPILE_DEFINITIONS(ElmerGrid PRIVATE DISABLE_MATC)
 ENDIF()
 
-TARGET_LINK_LIBRARIES(ElmerGrid PRIVATE metis m)
+TARGET_LINK_LIBRARIES(ElmerGrid PRIVATE ${ELMERGRID_METIS} m)
 IF(NOT(WIN32))
   SET_TARGET_PROPERTIES(ElmerGrid PROPERTIES INSTALL_RPATH "${ELMERSOLVER_RPATH_STRING}")
 ENDIF()
