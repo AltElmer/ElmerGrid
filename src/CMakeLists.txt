@@ -31,6 +31,22 @@ IF(NOT Metis_FOUND)
     "name for each platform.")
 ENDIF()
 
+# The include directory is added here rather than left to the imported target.
+#
+# FindMetis.cmake creates an imported `metis` target carrying
+# INTERFACE_INCLUDE_DIRECTORIES, but only along one of its two paths: when
+# Metis_LIBRARIES and Metis_INCLUDE_DIR are already set -- which is how a
+# caller pins a particular Metis, and how the release workflow selects the
+# static one -- it sets Metis_FOUND and RETURNs before creating anything. The
+# link then succeeds by name while metis.h is not on the include path, so the
+# failure is a missing header rather than a missing library, and only on
+# platforms where the prefix is not already searched. It passed on MSYS2 and
+# Linux for that reason and failed on macOS arm64.
+#
+# Same shape as ElmerCSC/elmerfem#907 in FindARPACK: a find module that reports
+# success without producing the target its callers rely on.
+TARGET_INCLUDE_DIRECTORIES(ElmerGrid SYSTEM PRIVATE ${Metis_INCLUDE_DIR})
+
 # config.h is generated into the elmergrid binary directory and reached as
 # "../config.h" from the sources here, so this directory is what is needed.
 TARGET_INCLUDE_DIRECTORIES(ElmerGrid PRIVATE
