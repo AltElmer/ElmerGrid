@@ -69,16 +69,19 @@ Measured 4 September 2026. Eleven of the twelve cases are byte-identical on ever
 
 The differences are structural rather than numerical: the connectivity changes, so these are not the same mesh. `barrel` is the case whose `.grd` revolves a profile, so its node positions come out of trigonometry, and ElmerGrid merges coincident nodes by comparing coordinates — a comparison a difference in the last place can push either way.
 
-The obvious suspect was floating-point contraction, since the disagreeing targets are exactly the ones whose compiler fuses `a*b + c` by default. That is a hypothesis, so it was run rather than asserted, as `-ffp-contract=off` builds in the same matrix. **It is half right:**
+The obvious suspect was floating-point contraction, since the disagreeing targets are exactly the ones whose compiler fuses `a*b + c` by default. That is a hypothesis, so it was run rather than asserted, as extra entries in the same matrix. It was half right, and the other half took one more:
 
-| | result |
-|---|---|
-| `linux-arm64-gcc-nofma` | **agrees with x86-64 everywhere, worst deviation 0.000e+00** |
-| `linux-x86_64-intel-icx-nofma` | `barrel` still differs |
+| | `barrel` | worst deviation from the reference |
+|---|---|---|
+| `linux-arm64-gcc` | differs | — |
+| `linux-arm64-gcc-nofma` (`-ffp-contract=off`) | **agrees** | **0.000e+00** |
+| `linux-x86_64-intel-icx` | differs | 1.776e-14 |
+| `linux-x86_64-intel-icx-nofma` (`-ffp-contract=off`) | **still differs** | 1.776e-14 |
+| `linux-x86_64-intel-icx-precise` (`-fp-model=precise`) | **agrees** | **0.000e+00** |
 
-So contraction is the whole story on arm64 and is not the story on `icx`, whose default `-fp-model fast` also reassociates and substitutes math functions. `linux-x86_64-intel-icx-precise` is in the matrix to close that half.
+So contraction is the entire cause on arm64, and it is not the cause on `icx`, whose default `-fp-model fast` also reassociates and substitutes math functions — turning all of that off fixes it, turning off only contraction does not.
 
-The more useful finding is the one both halves share, and it does not depend on which flag is responsible: `icx` agrees with the reference to **1.776e-14** in absolute terms and still produces different connectivity. Node merging is deciding a topological question on a last-place difference, so any compiler that is allowed to reorder arithmetic can change the mesh. Nothing warns, and both meshes look fine.
+Put together, the result is sharper than either half. **Under strict IEEE semantics ElmerGrid is bit-reproducible across four operating systems, two architectures and four compilers — every such build gives 0.000e+00.** Under each compiler's default it is not, and the way it fails is the part that matters: `icx` agrees with the reference to 1.776e-14 and still produces a different mesh. Node merging is deciding a topological question on a last-place difference, so any compiler permitted to reoptimise floating point can change the connectivity. Nothing warns, and both meshes look perfectly reasonable.
 
 One number here is easy to misread. `barrel`'s node deviation on the arm64 targets reports as 1.0 absolute, which is not a coordinate that moved by 1.0 — the node *ordering* changed along with the connectivity, so a line-by-line comparison is comparing different nodes. The connectivity difference is the finding; that figure is an artifact of comparing reordered files.
 
