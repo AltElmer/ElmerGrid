@@ -59,11 +59,11 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build
+          sudo apt-get install -y cmake ninja-build libmetis-dev
 
       - name: dependencies (macos)
         if: matrix.brew
-        run: brew install cmake ninja
+        run: brew install cmake ninja metis
 
       - name: dependencies (msys2)
         if: matrix.msys2
@@ -75,12 +75,40 @@ jobs:
             ${{ matrix.msys2-prefix }}-cmake
             ${{ matrix.msys2-prefix }}-ninja
             ${{ matrix.msys2-prefix }}-binutils
+            ${{ matrix.msys2-prefix }}-metis
+
+      # A release binary has to run on a machine with no Metis installed, so it
+      # links the static libmetis.a rather than whatever pkg-config offers.
+      # FindMetis.cmake returns early when both variables are already set, so
+      # naming them here is the supported way to override its search -- and
+      # -static alone is NOT enough: pkg-config hands it the full path to
+      # libmetis.dll.a, and a full path wins over the linker's preference, so
+      # the binary comes out importing libmetis.dll while looking static.
+      # The "self-contained" gate below is what caught that.
+      - name: find a static Metis
+        shell: ${{ matrix.msys2 && 'msys2 {0}' || 'bash' }}
+        run: |
+          set -e
+          for d in /ucrt64 /clangarm64 /usr /usr/local "$(brew --prefix metis 2>/dev/null || true)"; do
+            [ -n "$d" ] || continue
+            lib=$(find "$d/lib" -maxdepth 2 -name 'libmetis.a' 2>/dev/null | head -1)
+            inc=$(find "$d/include" -maxdepth 2 -name 'metis.h' 2>/dev/null | head -1)
+            if [ -n "$lib" ] && [ -n "$inc" ]; then
+              echo "METIS_A=$lib" >> "$GITHUB_ENV"
+              echo "METIS_H=$(dirname "$inc")" >> "$GITHUB_ENV"
+              echo "static metis: $lib"
+              exit 0
+            fi
+          done
+          echo "::error::no static libmetis.a found; a release binary would depend on a shared Metis"
+          exit 1
 
       - name: build and test
         if: '!matrix.msys2'
         shell: bash
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DMetis_LIBRARIES="$METIS_A" -DMetis_INCLUDE_DIR="$METIS_H" \
             ${{ matrix.static && '-DCMAKE_EXE_LINKER_FLAGS=-static' || '' }}
           cmake --build build
           ctest --test-dir build --output-on-failure
@@ -90,6 +118,7 @@ jobs:
         shell: msys2 {0}
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DMetis_LIBRARIES="$METIS_A" -DMetis_INCLUDE_DIR="$METIS_H" \
             -DCMAKE_EXE_LINKER_FLAGS=-static
           cmake --build build
           ctest --test-dir build --output-on-failure

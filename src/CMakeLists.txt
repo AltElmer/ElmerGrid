@@ -20,24 +20,15 @@ SET(elmergrid_SRCS egdef.h egparallel.h egnative.h egconvert.h
 
 ADD_EXECUTABLE(ElmerGrid ${elmergrid_SRCS})
 
-IF(EXTERNAL_METIS)
-  # use Metis that isinstalled on the system
-  FIND_PACKAGE(Metis)
-  IF(NOT Metis_FOUND)
-    MESSAGE(FATAL_ERROR "  Metis library not found. ")
-  ENDIF()
-ELSE()
-  # do not install bundled metis
-  SET(METIS_INSTALL FALSE CACHE BOOL "")
-  ADD_SUBDIRECTORY(metis-5.1.0)
-
-  # add metis as system include directory
-  # CMAKE_CURRENT_SOURCE_DIR is this directory in both the in-tree and the
-  # standalone build.  The CMAKE_SOURCE_DIR/elmergrid/src spelling that used to
-  # be listed here named the same directory when Elmer is the top level project
-  # and a nonexistent one otherwise.
-  TARGET_INCLUDE_DIRECTORIES(ElmerGrid SYSTEM BEFORE PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/metis-5.1.0/include)
+# Metis comes from the system. The bundled METIS 5.1.0 that upstream builds
+# when EXTERNAL_METIS is OFF is not in this repository; the top level
+# CMakeLists.txt refuses that configuration with the package names to install.
+FIND_PACKAGE(Metis)
+IF(NOT Metis_FOUND)
+  MESSAGE(FATAL_ERROR
+    "  Metis library not found. Install it, or point the build at one with "
+    "-DMETISROOT=<prefix>. The top level CMakeLists.txt lists the package "
+    "name for each platform.")
 ENDIF()
 
 # config.h is generated into the elmergrid binary directory and reached as

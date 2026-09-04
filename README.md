@@ -20,9 +20,31 @@ Those three merged into `devel` between 1 and 3 September 2026. This repository 
 
 Discussion of any of this belongs upstream in [#202](https://github.com/ElmerCSC/elmerfem/issues/202), not in the issue tracker here.
 
+## The bundled METIS is gone
+
+Upstream carries a copy of METIS 5.1.0 from 2013 under `elmergrid/src/metis-5.1.0` — 137 files of somebody else's library, inside the tree whose [#202](https://github.com/ElmerCSC/elmerfem/issues/202) complains about exactly that practice. This repository does not carry it. `EXTERNAL_METIS` defaults to `ON` here where upstream defaults it `OFF`, and configuring with `-DEXTERNAL_METIS=OFF` fails with the package name for each platform rather than silently building a vendored copy.
+
+Every platform in the CI matrix packages Metis: `libmetis-dev`, `brew install metis`, `pacman -S ${MINGW_PACKAGE_PREFIX}-metis`, `vcpkg install metis`. What it costs and what it buys, measured on MSYS2 UCRT64:
+
+| | bundled | system Metis |
+|---|---|---|
+| tracked files | 303 | **166** |
+| `ctest` | 15/15 | **15/15** |
+| `ElmerGrid 1 2 angle_metis.grd -metis 5` | 5 partitions | **5 partitions** |
+| `ElmerGrid.exe`, shared Metis | — | 747,058 bytes |
+| `ElmerGrid.exe`, static Metis (what a release ships) | 1,038,685 bytes | 1,198,000 bytes |
+
+What shrinks is the repository, not the binary — a statically linked release still carries Metis, and this one carries slightly more of it than the 2013 copy did. The saving is 137 files of vendored third-party source that nobody here was maintaining.
+
+The `-metis 5` row is the one that matters. Partitioning is what Metis is *for*, so a build that links and passes the mesh tests proves nothing about it; it was run, on both the shared and the static build.
+
+One trap worth recording, because the release gate is what caught it: `-static` alone is not enough. `pkg-config` hands `FindMetis.cmake` the full path to `libmetis.dll.a`, and a full path beats the linker's preference for archives, so the "static" binary came out importing `libmetis.dll`. The release workflow names `libmetis.a` explicitly and fails if it cannot find one.
+
+This is the one deliberate difference between this tree and upstream's `elmergrid/`, and it is the point of the exercise rather than an accident of extraction.
+
 ## Building
 
-No dependencies. Metis is bundled and builds with it.
+Metis is the only dependency.
 
 ```
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
@@ -48,7 +70,11 @@ Which gives the result worth stating: **under strict IEEE floating-point semanti
 
 ### MSVC
 
-MSVC is not in the matrix, and ElmerGrid is not the reason. Its own sources compile clean under `cl.exe` — all seven `eg*.c` translation units — but the bundled Metis does not: GKlib compiles with `-D__thread=__declspec(thread)`, which collides with `corecrt_math.h` in the current Windows SDK. Sixty-one errors, none of them outside GKlib. A vendored third-party library is the entire obstacle, which is one of the arguments in [#202](https://github.com/ElmerCSC/elmerfem/issues/202).
+MSVC is not in the matrix, and there are exactly two reasons. Both were measured, and the second one corrects an earlier claim here that the first was the whole story.
+
+The bundled METIS was one of them: GKlib compiles with `-D__thread=__declspec(thread)`, which collides with `corecrt_math.h` in the current Windows SDK. That was 61 errors, and removing the bundled copy removed all of them.
+
+What is left is ElmerGrid's own. `egnative.c`, `egparallel.c` and `egextra.c` include `<unistd.h>` unconditionally, for `chdir()`, which MSVC spells `_chdir` in `<direct.h>`. So four of the seven translation units compile under `cl.exe` and three do not. Guarding that include is a change to upstream source files and belongs in a pull request there, not quietly here.
 
 ## Tests
 
@@ -62,7 +88,7 @@ The bundled `src/metis-5.1.0` is [METIS](https://github.com/KarypisLab/METIS), c
 
 ## History
 
-Every commit in this repository is an upstream Elmer commit, with its original author, date and message, filtered down to the files that were ever part of ElmerGrid. Nothing was squashed, rewritten or reauthored. The tree at `main` is byte-for-byte the `elmergrid/` directory of `ElmerCSC/elmerfem@devel` — same tree hash — so anything you find here you can find there.
+Every commit in this repository is an upstream Elmer commit, with its original author, date and message, filtered down to the files that were ever part of ElmerGrid. Nothing was squashed, rewritten or reauthored. The extraction was verified by tree hash: at the point it was taken, `0407aaf1417a2e0ff074ab758044a44e4bb47608` was both this tree and `ElmerCSC/elmerfem@devel:elmergrid`. Everything after that commit is this repository's own — the tests, the CI, and the removal of the bundled METIS.
 
 An earlier `master` branch in this repository, from March 2020, was a copy of the sources with no history at all. It is kept as `archive/2020-metisectomy` rather than deleted, since deleting somebody's earlier work is not an improvement, but it should not be used.
 

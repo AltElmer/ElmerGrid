@@ -82,12 +82,14 @@ jobs:
             os: windows-11-arm
             msys2: CLANGARM64
             msys2-prefix: mingw-w64-clang-aarch64
-          # MSVC is absent on purpose, and not because ElmerGrid needs it to be.
-          # Its own sources compile clean under cl.exe; the bundled METIS does
-          # not, because GKlib passes -D__thread=__declspec(thread) and that
-          # collides with corecrt_math.h in the current Windows SDK.  A vendored
-          # third party library is the whole obstacle, which is the argument in
-          # ElmerCSC/elmerfem#202.
+          # MSVC is absent, and there are exactly two reasons, both measured.
+          # The bundled METIS was one: GKlib passes
+          # -D__thread=__declspec(thread), which collides with corecrt_math.h in
+          # the current Windows SDK.  Dropping it removed 61 errors.  What
+          # remains is ElmerGrid's own: egnative.c, egparallel.c and egextra.c
+          # include <unistd.h> unconditionally, for chdir().  Four of the seven
+          # translation units compile under cl.exe; those three do not.
+          # Guarding that include is an upstream change, not one to make here.
 
     steps:
       - uses: actions/checkout@v4
@@ -96,7 +98,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build clang
+          sudo apt-get install -y cmake ninja-build clang libmetis-dev
 
       - name: intel oneapi
         if: matrix.intel
@@ -111,7 +113,7 @@ jobs:
 
       - name: dependencies (macos)
         if: matrix.brew
-        run: brew install cmake ninja
+        run: brew install cmake ninja metis
 
       - name: dependencies (msys2)
         if: matrix.msys2
@@ -123,6 +125,7 @@ jobs:
             ${{ matrix.msys2-prefix }}-cmake
             ${{ matrix.msys2-prefix }}-ninja
             ${{ matrix.msys2-prefix }}-python
+            ${{ matrix.msys2-prefix }}-metis
 
       - name: build and test
         if: '!matrix.msys2'
@@ -218,7 +221,7 @@ jobs:
       - name: dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build
+          sudo apt-get install -y cmake ninja-build libmetis-dev
 
       - name: a parent project that adds it as a subdirectory
         run: |
