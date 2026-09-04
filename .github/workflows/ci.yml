@@ -134,16 +134,21 @@ jobs:
           if [ -f /opt/intel/oneapi/setvars.sh ]; then
             set +u; . /opt/intel/oneapi/setvars.sh; set -u
           fi
-          # Homebrew's metis ships no pkg-config file, and on arm64 it lives
-          # under /opt/homebrew, which is not one of CMake's default prefixes
-          # or one of the hints in FindMetis.cmake. x86-64 Homebrew happens to
-          # be /usr/local and is found without this, which is why only the
-          # arm64 job failed.
-          prefix=""
+          # Homebrew ships no pkg-config file for metis, so FindMetis.cmake
+          # falls through to its manual FIND_PATH -- and on the arm64 runner
+          # that found /Applications/Xcode_15.4.app/.../Python3.framework/
+          # Headers, which contains no metis.h, while finding the real
+          # /opt/homebrew/lib/libmetis.dylib. Both variables set means
+          # Metis_FOUND is TRUE, so the module reports success and the compile
+          # then fails on a missing metis.h. Naming both is the module's own
+          # documented escape: it returns early when they are already defined.
+          metis=""
           if [ "${{ runner.os }}" = "macOS" ]; then
-            prefix="-DCMAKE_PREFIX_PATH=$(brew --prefix)"
+            p=$(brew --prefix metis)
+            metis="-DMetis_LIBRARIES=$p/lib/libmetis.dylib -DMetis_INCLUDE_DIR=$p/include"
+            test -f "$p/include/metis.h" || { echo "::error::no metis.h under $p"; exit 1; }
           fi
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release $prefix ${{ matrix.cmake-extra }}
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release $metis ${{ matrix.cmake-extra }}
           cmake --build build
           ctest --test-dir build --output-on-failure
 
