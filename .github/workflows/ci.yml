@@ -25,7 +25,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PLATFORM_COUNT: 8
+  PLATFORM_COUNT: 10
 
 jobs:
   build:
@@ -46,6 +46,20 @@ jobs:
             os: ubuntu-24.04
             intel: true
             cmake-extra: -DCMAKE_C_COMPILER=icx
+          # The two -nofma entries are an experiment, not extra coverage.  The
+          # first run of this workflow found that barrel is the one case whose
+          # mesh is not the same everywhere, and that the platforms disagreeing
+          # were exactly the three arm64 targets and Intel icx -- the ones whose
+          # compilers contract a*b+c into a fused multiply-add by default.
+          # Turning contraction off is the experiment that separates that cause
+          # from the alternatives, so it is run rather than asserted.
+          - target: linux-arm64-gcc-nofma
+            os: ubuntu-24.04-arm
+            cmake-extra: -DCMAKE_C_FLAGS=-ffp-contract=off
+          - target: linux-x86_64-intel-icx-nofma
+            os: ubuntu-24.04
+            intel: true
+            cmake-extra: -DCMAKE_C_COMPILER=icx -DCMAKE_C_FLAGS=-ffp-contract=off
           - target: macos-arm64-clang
             os: macos-14
             brew: true
@@ -173,11 +187,17 @@ jobs:
             mv "$d" "platforms/$(basename "$d" | sed 's/^meshes-//')"
           done
           ls platforms
+          # barrel is excluded from the verdict and reported instead: measured
+          # 4 September 2026, it is the only one of the twelve whose mesh is not
+          # the same on every platform, and the exemption fails if it ever
+          # agrees everywhere, so it cannot quietly outlive the problem.
           python3 tests/compare_platforms.py \
             --root platforms \
             --reference linux-x86_64-gcc \
             --expect "${PLATFORM_COUNT}" \
-            --tolerance 1e-6
+            --tolerance 1e-9 \
+            --atol 1e-12 \
+            --known-divergent barrel
 
   as-subdirectory:
     name: consumed via add_subdirectory

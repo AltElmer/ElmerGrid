@@ -38,9 +38,11 @@ Prebuilt binaries for Linux, macOS and Windows on x86-64 and arm64 are attached 
 
 ## What CI checks
 
-Eight platform and compiler combinations on every push — GCC, Clang and Intel `icx` on Linux x86-64, GCC on Linux arm64, Clang on macOS arm64 and x86-64, and MinGW on Windows x86-64 and arm64. Each builds, runs the test suite, and meshes all twelve serial cases.
+Ten platform and compiler combinations on every push — GCC, Clang and Intel `icx` on Linux x86-64, GCC on Linux arm64, Clang on macOS arm64 and x86-64, MinGW on Windows x86-64 and arm64, and two of those repeated with `-ffp-contract=off`. Each builds, runs the test suite, and meshes all twelve serial cases.
 
-A ninth job then compares the meshes. ElmerGrid has no threads, no random seeds and no dependence on timing, so the same `.grd` file should give the same mesh on every one of those eight. Whether it does is a measurement, and the job is the instrument: connectivity and the header have to match exactly, node coordinates to a relative tolerance of 1e-6, and a platform that produced nothing is reported as such rather than passing by being absent. This is the shape of evidence [ElmerCSC/elmerfem#901](https://github.com/ElmerCSC/elmerfem/issues/901) is missing.
+A further job then compares the meshes. ElmerGrid has no threads, no random seeds and no dependence on timing, so the same `.grd` file should give the same mesh on every one of them. Whether it does is a measurement, and the job is the instrument: connectivity and the header have to match exactly, node coordinates to a mixed absolute and relative tolerance, and a platform that produced nothing is reported as such rather than passing by being absent.
+
+**It already found something.** Eleven of the twelve cases are byte-identical everywhere. `barrel` is not: its connectivity differs on Linux arm64, macOS arm64, Windows arm64 and Intel `icx`, and agrees on every x86-64 GCC, Clang and MinGW build — which is to say, on exactly the targets whose compiler does not contract `a*b + c` into a fused multiply-add by default. The two `-ffp-contract=off` entries in the matrix are there to test that rather than assume it. Details and the numbers are in [tests/README.md](tests/README.md); this is the shape of evidence [ElmerCSC/elmerfem#901](https://github.com/ElmerCSC/elmerfem/issues/901) is missing.
 
 ### MSVC
 
