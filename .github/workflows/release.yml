@@ -85,24 +85,52 @@ jobs:
       # libmetis.dll.a, and a full path wins over the linker's preference, so
       # the binary comes out importing libmetis.dll while looking static.
       # The "self-contained" gate below is what caught that.
+      # Neither Debian's libmetis-dev nor Homebrew's metis ships a static
+      # library -- measured, this step failed on all four unix targets the
+      # first time it ran, which is what it is for. So the release gets its
+      # Metis from vcpkg, whose default linux and osx triplets are static.
+      # vcpkg is preinstalled on the runners.
+      #
+      # There is some symmetry in that: vcpkg is what
+      # AltElmer/ElmerGrid#1 proposed for this in 2020.
       - name: find a static Metis
         if: '!matrix.msys2'
         shell: bash
         run: |
           set -e
-          for d in /usr /usr/local "$(brew --prefix metis 2>/dev/null || true)"; do
-            [ -n "$d" ] || continue
-            lib=$(find "$d/lib" -maxdepth 2 -name 'libmetis.a' 2>/dev/null | head -1)
-            inc=$(find "$d/include" -maxdepth 2 -name 'metis.h' 2>/dev/null | head -1)
-            if [ -n "$lib" ] && [ -n "$inc" ]; then
-              echo "METIS_A=$lib" >> "$GITHUB_ENV"
-              echo "METIS_H=$(dirname "$inc")" >> "$GITHUB_ENV"
-              echo "static metis: $lib"
-              exit 0
-            fi
+          echo "--- what the system packages actually ship ---"
+          for d in /usr/lib /usr/local/lib /usr/lib/x86_64-linux-gnu /usr/lib/aarch64-linux-gnu \
+                   "$(brew --prefix metis 2>/dev/null || echo /nonexistent)/lib"; do
+            [ -d "$d" ] && ls "$d"/libmetis* 2>/dev/null || true
           done
-          echo "::error::no static libmetis.a found; a release binary would depend on a shared Metis"
-          exit 1
+
+          find_pair() {
+            lib=$(find "$1" -name 'libmetis.a' 2>/dev/null | head -1)
+            inc=$(find "$2" -name 'metis.h' 2>/dev/null | head -1)
+            [ -n "$lib" ] && [ -n "$inc" ]
+          }
+
+          if find_pair /usr /usr; then
+            :
+          elif find_pair "$(brew --prefix metis 2>/dev/null || echo /nonexistent)" \
+                         "$(brew --prefix metis 2>/dev/null || echo /nonexistent)"; then
+            :
+          else
+            echo "--- no static Metis from the system; building one with vcpkg ---"
+            vcpkg="${VCPKG_INSTALLATION_ROOT:-/usr/local/share/vcpkg}"
+            [ -x "$vcpkg/vcpkg" ] || { echo "::error::vcpkg not found at $vcpkg"; exit 1; }
+            "$vcpkg/vcpkg" install metis
+            find_pair "$vcpkg/installed" "$vcpkg/installed" || {
+              echo "::error::vcpkg reported success but produced no libmetis.a and metis.h"
+              find "$vcpkg/installed" -name 'libmetis*' -o -name 'metis.h' | head -20
+              exit 1
+            }
+          fi
+
+          echo "METIS_A=$lib" >> "$GITHUB_ENV"
+          echo "METIS_H=$(dirname "$inc")" >> "$GITHUB_ENV"
+          echo "static metis: $lib"
+          echo "metis header: $inc"
 
       - name: find a static Metis (msys2)
         if: matrix.msys2
