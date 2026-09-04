@@ -60,15 +60,26 @@ Exit 0 if every platform agrees, 1 if one disagrees, 3 if it could not tell — 
 
 ## What the determinism job found
 
-First run, 4 September 2026, ten platform and compiler combinations. Eleven of the twelve cases are byte-identical on all ten. `barrel` is not, and the split is not random:
+Measured 4 September 2026. Eleven of the twelve cases are byte-identical on every platform and compiler in the matrix. `barrel` is not, and the split is not random:
 
 | | `barrel` |
 |---|---|
 | linux-x86_64 GCC, Clang; macOS x86-64 Clang; Windows x86-64 MinGW | agree |
-| linux-arm64 GCC; macOS arm64 Clang; Windows arm64 MinGW; linux-x86_64 Intel `icx` | differ, in `mesh.elements` and `mesh.boundary` |
+| linux-arm64 GCC; macOS arm64 Clang; Windows arm64 MinGW; linux-x86_64 Intel `icx` | `mesh.elements` and `mesh.boundary` differ |
 
-Those are exactly the targets whose compiler contracts `a*b + c` into a fused multiply-add by default, and the differences are structural rather than numerical: the connectivity changes, so the meshes are not the same mesh. `barrel` is the case whose `.grd` revolves a profile, so its node positions come out of trigonometry, and ElmerGrid merges coincident nodes by comparing coordinates — a comparison that a difference in the last place can push either way.
+The differences are structural rather than numerical: the connectivity changes, so these are not the same mesh. `barrel` is the case whose `.grd` revolves a profile, so its node positions come out of trigonometry, and ElmerGrid merges coincident nodes by comparing coordinates — a comparison a difference in the last place can push either way.
 
-That is a hypothesis, and it is testable rather than assertable, so the matrix carries `linux-arm64-gcc-nofma` and `linux-x86_64-intel-icx-nofma`, which are the same builds with `-ffp-contract=off`. If those agree with the x86-64 reference, contraction is the cause; if they do not, it is something else and the guess was wrong.
+The obvious suspect was floating-point contraction, since the disagreeing targets are exactly the ones whose compiler fuses `a*b + c` by default. That is a hypothesis, so it was run rather than asserted, as `-ffp-contract=off` builds in the same matrix. **It is half right:**
 
-This is the kind of evidence [ElmerCSC/elmerfem#901](https://github.com/ElmerCSC/elmerfem/issues/901) needs and the kind of thing [#909](https://github.com/ElmerCSC/elmerfem/issues/909) is about: a result that changes with the compiler, silently, in a tool everybody's workflow starts with.
+| | result |
+|---|---|
+| `linux-arm64-gcc-nofma` | **agrees with x86-64 everywhere, worst deviation 0.000e+00** |
+| `linux-x86_64-intel-icx-nofma` | `barrel` still differs |
+
+So contraction is the whole story on arm64 and is not the story on `icx`, whose default `-fp-model fast` also reassociates and substitutes math functions. `linux-x86_64-intel-icx-precise` is in the matrix to close that half.
+
+The more useful finding is the one both halves share, and it does not depend on which flag is responsible: `icx` agrees with the reference to **1.776e-14** in absolute terms and still produces different connectivity. Node merging is deciding a topological question on a last-place difference, so any compiler that is allowed to reorder arithmetic can change the mesh. Nothing warns, and both meshes look fine.
+
+One number here is easy to misread. `barrel`'s node deviation on the arm64 targets reports as 1.0 absolute, which is not a coordinate that moved by 1.0 — the node *ordering* changed along with the connectivity, so a line-by-line comparison is comparing different nodes. The connectivity difference is the finding; that figure is an artifact of comparing reordered files.
+
+This is the kind of evidence [ElmerCSC/elmerfem#901](https://github.com/ElmerCSC/elmerfem/issues/901) needs and the kind of thing [#909](https://github.com/ElmerCSC/elmerfem/issues/909) is about: a result that changes with the compiler, silently, in the tool most Elmer workflows start with.
