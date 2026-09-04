@@ -134,7 +134,16 @@ jobs:
           if [ -f /opt/intel/oneapi/setvars.sh ]; then
             set +u; . /opt/intel/oneapi/setvars.sh; set -u
           fi
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release ${{ matrix.cmake-extra }}
+          # Homebrew's metis ships no pkg-config file, and on arm64 it lives
+          # under /opt/homebrew, which is not one of CMake's default prefixes
+          # or one of the hints in FindMetis.cmake. x86-64 Homebrew happens to
+          # be /usr/local and is found without this, which is why only the
+          # arm64 job failed.
+          prefix=""
+          if [ "${{ runner.os }}" = "macOS" ]; then
+            prefix="-DCMAKE_PREFIX_PATH=$(brew --prefix)"
+          fi
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release $prefix ${{ matrix.cmake-extra }}
           cmake --build build
           ctest --test-dir build --output-on-failure
 
@@ -150,8 +159,12 @@ jobs:
       # binary exists, which ctest would not notice if it had somehow run
       # something else, and then produces the meshes the determinism job
       # compares.
+      # In the MSYS2 shell for the MSYS2 targets. ElmerGrid now links a shared
+      # libmetis from the MSYS2 prefix, which is not on the runner's default
+      # Git Bash PATH, so running it there fails to load the DLL and the step
+      # exits 127 -- indistinguishable from the binary not existing.
       - name: mesh every serial case
-        shell: bash
+        shell: ${{ matrix.msys2 && 'msys2 {0}' || 'bash' }}
         run: |
           set -e
           eg=$(find build -name 'ElmerGrid' -o -name 'ElmerGrid.exe' | head -1)
