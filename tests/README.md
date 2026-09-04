@@ -48,7 +48,27 @@ This is worth reporting upstream and has nothing to do with modularization; it i
 Used by the `determinism` job in CI. It takes a directory of per-platform mesh trees and compares each against a reference platform: `mesh.header`, `mesh.elements` and `mesh.boundary` exactly, after normalising line endings, and `mesh.nodes` to a relative tolerance, since node coordinates go through `libm` and implementations are allowed to differ in the last place.
 
 ```
-python3 compare_platforms.py --root platforms --reference linux-x86_64-gcc --expect 8 --tolerance 1e-6
+python3 compare_platforms.py --root platforms --reference linux-x86_64-gcc \
+    --expect 10 --tolerance 1e-9 --atol 1e-12 --known-divergent barrel
 ```
 
-Exit 0 if every platform agrees, 1 if one disagrees, 3 if it could not tell — fewer than two platforms present, a platform that produced no meshes, or `--expect` not matching what was found. The last of those is deliberate: a platform whose job never uploaded an artifact is invisible to a comparison that only looks at what is there.
+Node coordinates are compared with the usual mixed test, `|a - b| <= atol + rtol * |a|`, because a coordinate that is zero on one platform and 1e-16 on another has a relative deviation of 1 and that says nothing useful. Both figures are still reported.
+
+Exit 0 if every platform agrees, 1 if one disagrees, 3 if it could not tell — fewer than two platforms present, a platform that produced no meshes, `--expect` not matching what was found, or `--known-divergent` naming a case that does not exist. The `--expect` check is deliberate: a platform whose job never uploaded an artifact is invisible to a comparison that only looks at what is there.
+
+`--known-divergent` excludes a case from the verdict and reports it instead. It fails the run if that case turns out to agree everywhere, so an exemption cannot outlive the problem it was written for and go on hiding a real regression.
+
+## What the determinism job found
+
+First run, 4 September 2026, ten platform and compiler combinations. Eleven of the twelve cases are byte-identical on all ten. `barrel` is not, and the split is not random:
+
+| | `barrel` |
+|---|---|
+| linux-x86_64 GCC, Clang; macOS x86-64 Clang; Windows x86-64 MinGW | agree |
+| linux-arm64 GCC; macOS arm64 Clang; Windows arm64 MinGW; linux-x86_64 Intel `icx` | differ, in `mesh.elements` and `mesh.boundary` |
+
+Those are exactly the targets whose compiler contracts `a*b + c` into a fused multiply-add by default, and the differences are structural rather than numerical: the connectivity changes, so the meshes are not the same mesh. `barrel` is the case whose `.grd` revolves a profile, so its node positions come out of trigonometry, and ElmerGrid merges coincident nodes by comparing coordinates — a comparison that a difference in the last place can push either way.
+
+That is a hypothesis, and it is testable rather than assertable, so the matrix carries `linux-arm64-gcc-nofma` and `linux-x86_64-intel-icx-nofma`, which are the same builds with `-ffp-contract=off`. If those agree with the x86-64 reference, contraction is the cause; if they do not, it is something else and the guess was wrong.
+
+This is the kind of evidence [ElmerCSC/elmerfem#901](https://github.com/ElmerCSC/elmerfem/issues/901) needs and the kind of thing [#909](https://github.com/ElmerCSC/elmerfem/issues/909) is about: a result that changes with the compiler, silently, in a tool everybody's workflow starts with.
