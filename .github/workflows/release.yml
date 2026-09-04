@@ -1,0 +1,195 @@
+name: release
+
+# ElmerGrid is a single executable with no external dependencies, so a release
+# is one file per platform that runs on a machine with nothing installed.
+#
+# Each archive is checked before it is published: the binary must run, it must
+# produce a mesh, and it must not depend on anything that is not part of the
+# operating system.  A dynamically linked binary that happens to work on the
+# runner is exactly the artifact that fails on a user's machine, so the link
+# check is a gate rather than a note.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to build and attach to
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-x86_64
+            os: ubuntu-24.04
+            static: true
+          - target: linux-arm64
+            os: ubuntu-24.04-arm
+            static: true
+          - target: macos-arm64
+            os: macos-14
+            brew: true
+          - target: macos-x86_64
+            os: macos-15-intel
+            brew: true
+          - target: windows-x86_64
+            os: windows-2022
+            msys2: UCRT64
+            msys2-prefix: mingw-w64-ucrt-x86_64
+            static: true
+          - target: windows-arm64
+            os: windows-11-arm
+            msys2: CLANGARM64
+            msys2-prefix: mingw-w64-clang-aarch64
+            static: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: dependencies (linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build
+
+      - name: dependencies (macos)
+        if: matrix.brew
+        run: brew install cmake ninja
+
+      - name: dependencies (msys2)
+        if: matrix.msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msys2 }}
+          install: >-
+            ${{ matrix.msys2-prefix }}-cc
+            ${{ matrix.msys2-prefix }}-cmake
+            ${{ matrix.msys2-prefix }}-ninja
+            ${{ matrix.msys2-prefix }}-binutils
+
+      - name: build and test
+        if: '!matrix.msys2'
+        shell: bash
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            ${{ matrix.static && '-DCMAKE_EXE_LINKER_FLAGS=-static' || '' }}
+          cmake --build build
+          ctest --test-dir build --output-on-failure
+
+      - name: build and test (msys2)
+        if: matrix.msys2
+        shell: msys2 {0}
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_EXE_LINKER_FLAGS=-static
+          cmake --build build
+          ctest --test-dir build --output-on-failure
+
+      - name: the binary must be self-contained
+        shell: bash
+        run: |
+          set -e
+          eg=$(find build -name 'ElmerGrid' -o -name 'ElmerGrid.exe' | head -1)
+          [ -n "$eg" ] || { echo "::error::ElmerGrid was not built"; exit 1; }
+          echo "binary: $eg  ($(wc -c < "$eg") bytes)"
+
+          case "${{ runner.os }}" in
+            Linux)
+              # ldd exits 1 saying "not a dynamic executable" for a static one,
+              # so its output is what is read, not its status.
+              out=$(ldd "$eg" 2>&1 || true)
+              echo "$out"
+              case "$out" in
+                *"not a dynamic executable"*|*"statically linked"*) echo "ok: static" ;;
+                *) echo "::error::the binary is dynamically linked"; exit 1 ;;
+              esac
+              ;;
+            macOS)
+              # A fully static binary is not supported on macOS: there is no
+              # static libSystem. Self-contained here means nothing outside the
+              # OS, which is what a machine without Homebrew provides.
+              out=$(otool -L "$eg")
+              echo "$out"
+              if echo "$out" | tail -n +2 | grep -vqE '/usr/lib/|/System/'; then
+                echo "::error::the binary links something outside the operating system"
+                echo "$out" | tail -n +2 | grep -vE '/usr/lib/|/System/'
+                exit 1
+              fi
+              echo "ok: nothing outside /usr/lib and /System"
+              ;;
+            Windows)
+              out=$(objdump -p "$eg" | grep -i 'DLL Name' || true)
+              echo "$out"
+              if echo "$out" | grep -viE 'KERNEL32|msvcrt|ucrtbase|api-ms-win|ADVAPI32|USER32|SHELL32|ntdll'; then
+                echo "::error::the binary depends on a DLL that is not part of Windows"
+                exit 1
+              fi
+              echo "ok: only system DLLs"
+              ;;
+          esac
+
+      - name: it must actually mesh something
+        shell: bash
+        run: |
+          set -e
+          eg=$(find build -name 'ElmerGrid' -o -name 'ElmerGrid.exe' | head -1)
+          eg=$(cd "$(dirname "$eg")" && pwd)/$(basename "$eg")
+          cd tests/serial
+          "$eg" 1 2 rect.grd -out "$RUNNER_TEMP/smoke" > /dev/null
+          for f in mesh.header mesh.nodes mesh.elements mesh.boundary; do
+            [ -s "$RUNNER_TEMP/smoke/$f" ] || { echo "::error::no $f"; exit 1; }
+          done
+          echo "smoke test: $(head -1 "$RUNNER_TEMP/smoke/mesh.header")"
+
+      - name: package
+        shell: bash
+        run: |
+          set -e
+          d="dist/elmergrid-${{ matrix.target }}"
+          mkdir -p "$d"
+          eg=$(find build -name 'ElmerGrid' -o -name 'ElmerGrid.exe' | head -1)
+          cp "$eg" "$d/"
+          cp README.md LICENSES GPL-2 "$d/" 2>/dev/null || true
+          cd dist
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            7z a "elmergrid-${{ matrix.target }}.zip" "elmergrid-${{ matrix.target }}" > /dev/null
+          else
+            tar czf "elmergrid-${{ matrix.target }}.tar.gz" "elmergrid-${{ matrix.target }}"
+          fi
+          ls -l .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: elmergrid-${{ matrix.target }}
+          path: dist/elmergrid-*.*
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    # A platform that fails does not withhold the platforms that worked.
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: list what will be published
+        run: ls -lR dist
+
+      - name: attach to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          generate_release_notes: true
+          files: dist/**/elmergrid-*.*
