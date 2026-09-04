@@ -1,4 +1,8 @@
-Elmergrid contains the METIS library.
+Elmergrid links against the METIS library. Upstream ElmerCSC/elmerfem also
+ships a copy of it under elmergrid/src/metis-5.1.0; this repository does not,
+and builds against a METIS installed on the system. The notice below is kept
+because the linking exception further down depends on it, and because a binary
+built from this source still carries METIS code.
 
 License lic_metis
 -----------------
@@ -33,7 +37,7 @@ elmergrid, hereby grants you the right to link the source code within this
 directory against any versions of the libraries
 
 "METIS" by Regents of the University of Minnesota
-"Scotch" by François Pellegrini
+"Scotch" by Franï¿½ois Pellegrini
 
 You may also link ElmerGUI against any later versions of METIS or Scotch,
 provided that the license permits such usage. The license terms for the
