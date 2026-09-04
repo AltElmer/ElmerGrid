@@ -30,8 +30,18 @@ IF(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   IF(NOT DEFINED ELMER_FEM_VERSION)
     SET(ELMER_FEM_VERSION "standalone")
   ENDIF()
+
+  SET(ELMERGRID_STANDALONE TRUE)
+  ENABLE_TESTING()
 ENDIF()
 
 CONFIGURE_FILE(config.h.cmake config.h)
 
 ADD_SUBDIRECTORY(src)
+
+# Tests are added only in the standalone build.  Elmer's top level build runs
+# its own test suite and must not gain targets from here, which the
+# "consumed via add_subdirectory" job in CI checks.
+IF(ELMERGRID_STANDALONE)
+  ADD_SUBDIRECTORY(tests)
+ENDIF()

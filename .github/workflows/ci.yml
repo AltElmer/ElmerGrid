@@ -1,0 +1,228 @@
+name: ci
+
+# ElmerGrid, built on its own out of this repository rather than as part of
+# Elmer.  Three things are checked, and each of them can fail:
+#
+#   build        it configures, compiles and passes its own tests on eight
+#                platform/compiler combinations
+#   determinism  the same .grd file gives the same mesh on all eight
+#   subdirectory a parent project can still add it with add_subdirectory and
+#                gains nothing it did not ask for, which is how Elmer uses it
+#
+# The determinism job is the one worth watching.  ElmerGrid has no threads, no
+# random seeds and no timing, so the same input should give the same mesh
+# everywhere; whether it does is a measurement rather than an assumption.  See
+# ElmerCSC/elmerfem#901 for why that matters.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PLATFORM_COUNT: 8
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-x86_64-gcc
+            os: ubuntu-24.04
+          - target: linux-arm64-gcc
+            os: ubuntu-24.04-arm
+          - target: linux-x86_64-clang
+            os: ubuntu-24.04
+            cmake-extra: -DCMAKE_C_COMPILER=clang
+          - target: linux-x86_64-intel-icx
+            os: ubuntu-24.04
+            intel: true
+            cmake-extra: -DCMAKE_C_COMPILER=icx
+          - target: macos-arm64-clang
+            os: macos-14
+            brew: true
+          - target: macos-x86_64-clang
+            os: macos-15-intel
+            brew: true
+          - target: windows-x86_64-mingw
+            os: windows-2022
+            msys2: UCRT64
+            msys2-prefix: mingw-w64-ucrt-x86_64
+          - target: windows-arm64-mingw
+            os: windows-11-arm
+            msys2: CLANGARM64
+            msys2-prefix: mingw-w64-clang-aarch64
+          # MSVC is absent on purpose, and not because ElmerGrid needs it to be.
+          # Its own sources compile clean under cl.exe; the bundled METIS does
+          # not, because GKlib passes -D__thread=__declspec(thread) and that
+          # collides with corecrt_math.h in the current Windows SDK.  A vendored
+          # third party library is the whole obstacle, which is the argument in
+          # ElmerCSC/elmerfem#202.
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: dependencies (linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build clang
+
+      - name: intel oneapi
+        if: matrix.intel
+        run: |
+          wget -qO- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+            | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" \
+            | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt-get update
+          sudo apt-get install -y intel-oneapi-compiler-dpcpp-cpp
+          echo "/opt/intel/oneapi/compiler/latest/bin" >> "$GITHUB_PATH"
+
+      - name: dependencies (macos)
+        if: matrix.brew
+        run: brew install cmake ninja
+
+      - name: dependencies (msys2)
+        if: matrix.msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msys2 }}
+          install: >-
+            ${{ matrix.msys2-prefix }}-cc
+            ${{ matrix.msys2-prefix }}-cmake
+            ${{ matrix.msys2-prefix }}-ninja
+            ${{ matrix.msys2-prefix }}-python
+
+      - name: build and test
+        if: '!matrix.msys2'
+        shell: bash
+        run: |
+          if [ -f /opt/intel/oneapi/setvars.sh ]; then
+            set +u; . /opt/intel/oneapi/setvars.sh; set -u
+          fi
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release ${{ matrix.cmake-extra }}
+          cmake --build build
+          ctest --test-dir build --output-on-failure
+
+      - name: build and test (msys2)
+        if: matrix.msys2
+        shell: msys2 {0}
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+          ctest --test-dir build --output-on-failure
+
+      # ctest reports that each mesh is self-consistent.  This asserts the
+      # binary exists, which ctest would not notice if it had somehow run
+      # something else, and then produces the meshes the determinism job
+      # compares.
+      - name: mesh every serial case
+        shell: bash
+        run: |
+          set -e
+          eg=$(find build -name 'ElmerGrid' -o -name 'ElmerGrid.exe' | head -1)
+          [ -n "$eg" ] || { echo "::error::ElmerGrid was not built"; exit 1; }
+          eg=$(cd "$(dirname "$eg")" && pwd)/$(basename "$eg")
+          echo "binary: $eg"
+          out="$PWD/meshes"
+          mkdir -p "$out"
+          cd tests/serial
+          n=0
+          for g in *.grd; do
+            "$eg" 1 2 "$g" -out "$out/${g%.grd}" > /dev/null
+            n=$((n + 1))
+          done
+          echo "meshed $n cases"
+          [ "$n" -gt 0 ] || { echo "::error::no .grd inputs were found"; exit 1; }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: meshes-${{ matrix.target }}
+          path: meshes
+          if-no-files-found: error
+
+  determinism:
+    name: every platform produces the same mesh
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: meshes-*
+
+      # download-artifact names each directory meshes-<target>; the comparison
+      # wants the target names, and --expect makes a platform whose job never
+      # uploaded anything visible rather than silently absent.
+      - name: compare
+        run: |
+          set -e
+          mkdir -p platforms
+          for d in artifacts/meshes-*; do
+            mv "$d" "platforms/$(basename "$d" | sed 's/^meshes-//')"
+          done
+          ls platforms
+          python3 tests/compare_platforms.py \
+            --root platforms \
+            --reference linux-x86_64-gcc \
+            --expect "${PLATFORM_COUNT}" \
+            --tolerance 1e-6
+
+  as-subdirectory:
+    name: consumed via add_subdirectory
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: elmergrid
+
+      - name: dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build
+
+      - name: a parent project that adds it as a subdirectory
+        run: |
+          cat > CMakeLists.txt <<'EOF'
+          cmake_minimum_required(VERSION 3.12)
+          project(parent C)
+          add_subdirectory(elmergrid)
+          EOF
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+          find build -name 'ElmerGrid' | head -1
+
+      # The standalone block must do nothing when this is a subdirectory. That
+      # is what ElmerCSC/elmerfem#892 promised upstream, and it is the property
+      # that lets this repository exist without Elmer's build changing.
+      - name: it must not add its tests to the parent
+        run: |
+          if ctest --test-dir build -N 2>/dev/null | grep -q 'Test *#'; then
+            echo "::error::ElmerGrid registered tests inside a parent project"
+            ctest --test-dir build -N
+            exit 1
+          fi
+          echo "ok: added no tests to the parent"
+
+      # Control for the check above: the standalone build must register tests,
+      # otherwise the grep proves nothing.
+      - name: control -- the standalone build does register them
+        run: |
+          cmake -S elmergrid -B build-standalone -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-standalone
+          if ! ctest --test-dir build-standalone -N | grep -q 'Test *#'; then
+            echo "::error::the standalone build registered no tests, so the check above is vacuous"
+            exit 1
+          fi
+          echo "ok: $(ctest --test-dir build-standalone -N | grep -c 'Test *#') tests registered standalone"

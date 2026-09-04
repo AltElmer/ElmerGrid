@@ -1,0 +1,11 @@
+build/
+build-*/
+dist/
+meshes/
+platforms/
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+*.exe
