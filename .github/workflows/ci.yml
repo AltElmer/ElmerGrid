@@ -159,15 +159,36 @@ jobs:
       # binary exists, which ctest would not notice if it had somehow run
       # something else, and then produces the meshes the determinism job
       # compares.
-      # In the MSYS2 shell for the MSYS2 targets. ElmerGrid now links a shared
-      # libmetis from the MSYS2 prefix, which is not on the runner's default
-      # Git Bash PATH, so running it there fails to load the DLL and the step
-      # exits 127 -- indistinguishable from the binary not existing.
       - name: mesh every serial case
-        shell: ${{ matrix.msys2 && 'msys2 {0}' || 'bash' }}
+        if: '!matrix.msys2'
+        shell: bash
         run: |
           set -e
           eg=$(find build -name 'ElmerGrid' -o -name 'ElmerGrid.exe' | head -1)
+          [ -n "$eg" ] || { echo "::error::ElmerGrid was not built"; exit 1; }
+          eg=$(cd "$(dirname "$eg")" && pwd)/$(basename "$eg")
+          echo "binary: $eg"
+          out="$PWD/meshes"
+          mkdir -p "$out"
+          cd tests/serial
+          n=0
+          for g in *.grd; do
+            "$eg" 1 2 "$g" -out "$out/${g%.grd}" > /dev/null
+            n=$((n + 1))
+          done
+          echo "meshed $n cases"
+          [ "$n" -gt 0 ] || { echo "::error::no .grd inputs were found"; exit 1; }
+
+      # Same step, in the MSYS2 shell. ElmerGrid now links a shared libmetis
+      # from the MSYS2 prefix, which is not on the runner's default Git Bash
+      # PATH, so running it there fails to load the DLL and the step exits 127
+      # -- the same code as command-not-found, so it reads as "never built".
+      - name: mesh every serial case (msys2)
+        if: matrix.msys2
+        shell: msys2 {0}
+        run: |
+          set -e
+          eg=$(find build -name 'ElmerGrid.exe' | head -1)
           [ -n "$eg" ] || { echo "::error::ElmerGrid was not built"; exit 1; }
           eg=$(cd "$(dirname "$eg")" && pwd)/$(basename "$eg")
           echo "binary: $eg"

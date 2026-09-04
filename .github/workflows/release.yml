@@ -86,10 +86,11 @@ jobs:
       # the binary comes out importing libmetis.dll while looking static.
       # The "self-contained" gate below is what caught that.
       - name: find a static Metis
-        shell: ${{ matrix.msys2 && 'msys2 {0}' || 'bash' }}
+        if: '!matrix.msys2'
+        shell: bash
         run: |
           set -e
-          for d in /ucrt64 /clangarm64 /usr /usr/local "$(brew --prefix metis 2>/dev/null || true)"; do
+          for d in /usr /usr/local "$(brew --prefix metis 2>/dev/null || true)"; do
             [ -n "$d" ] || continue
             lib=$(find "$d/lib" -maxdepth 2 -name 'libmetis.a' 2>/dev/null | head -1)
             inc=$(find "$d/include" -maxdepth 2 -name 'metis.h' 2>/dev/null | head -1)
@@ -102,6 +103,21 @@ jobs:
           done
           echo "::error::no static libmetis.a found; a release binary would depend on a shared Metis"
           exit 1
+
+      - name: find a static Metis (msys2)
+        if: matrix.msys2
+        shell: msys2 {0}
+        run: |
+          set -e
+          lib=$(find "$MINGW_PREFIX/lib" -maxdepth 2 -name 'libmetis.a' 2>/dev/null | head -1)
+          inc=$(find "$MINGW_PREFIX/include" -maxdepth 2 -name 'metis.h' 2>/dev/null | head -1)
+          if [ -z "$lib" ] || [ -z "$inc" ]; then
+            echo "::error::no static libmetis.a under $MINGW_PREFIX; a release binary would depend on a shared Metis"
+            exit 1
+          fi
+          echo "METIS_A=$lib" >> "$GITHUB_ENV"
+          echo "METIS_H=$(dirname "$inc")" >> "$GITHUB_ENV"
+          echo "static metis: $lib"
 
       - name: build and test
         if: '!matrix.msys2'
